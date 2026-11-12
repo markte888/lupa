@@ -417,6 +417,7 @@ const getJ = u => fetch(u).then(r => r.ok ? r.json() : {}).catch(() => ({}));
 const swapComma = t => { const m = String(t).match(/^([^,()]+),\s*([^()]+)$/); return m ? (m[2].trim() + ' ' + m[1].trim()) : String(t).replace(/\s*\(.*?\)\s*$/, ''); };
 /* common Russian spellings of Western first names and particles */
 const NAME_EQ = { 'евген': 'eugene', 'евгений': 'eugene', 'юджин': 'eugene', 'ойген': 'eugen', 'эжен': 'eugene', 'фон': 'von', 'ван': 'van', 'дер': 'der', 'де': 'de', 'ди': 'di', 'дю': 'du', 'ле': 'le', 'ла': 'la', 'джон': 'john', 'жан': 'jean', 'пьер': 'pierre', 'анри': 'henri', 'ман': 'man', 'рэй': 'ray', 'майкл': 'michael', 'уильям': 'william', 'уилльям': 'william', 'роберт': 'robert', 'ричард': 'richard', 'стивен': 'stephen', 'джозеф': 'joseph', 'диана': 'diane', 'нан': 'nan', 'синди': 'cindy', 'вивиан': 'vivian', 'сол': 'saul', 'хельмут': 'helmut', 'ирвинг': 'irving', 'эдвард': 'edward', 'альфред': 'alfred', 'андре': 'andre', 'брассай': 'brassai', 'гарри': 'garry', 'ли': 'lee', 'сэлли': 'sally', 'франческа': 'francesca', 'дайдо': 'daido', 'ринко': 'rinko' };
+const known = q => q.trim().split(/\s+/).map(w => NAME_EQ[w.toLowerCase()]).filter(Boolean).join(' ');
 const latName = q => q.trim().split(/\s+/).map(w => NAME_EQ[w.toLowerCase()] || norm(w)).join(' ');
 async function suggest(q){
   const k = q.toLowerCase(); if (sugCache.has(k)) return sugCache.get(k);
@@ -431,7 +432,9 @@ async function suggest(q){
   const reqs = cyr ? [
     getJ(G('ru') + '15&gsrsearch=' + encodeURIComponent(loose(q))),
     getJ(G('ru') + '15&gsrsearch=' + encodeURIComponent(strict(q) + ' фотограф')),
-    getJ(G('en') + '20&gsrsearch=' + encodeURIComponent(strict(latName(q)) + ' photographer'))
+    getJ(G('en') + '20&gsrsearch=' + encodeURIComponent(strict(latName(q)) + ' photographer')),
+    // only the parts we can translate reliably (first name, von/van/de…), then rank by how the whole name sounds
+    ...(known(q) ? [getJ(G('en') + '30&gsrsearch=' + encodeURIComponent(known(q) + ' (photographer OR artist OR sculptor)'))] : [])
   ] : [
     getJ(G('en') + '15&gsrsearch=' + encodeURIComponent(loose(q))),
     getJ(G('en') + '20&gsrsearch=' + encodeURIComponent(strict(q) + ' photographer')),
