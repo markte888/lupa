@@ -420,16 +420,19 @@ async function suggest(q){
   const cyr = /[а-яёіїєґ]/i.test(q);
   const toks = s => s.trim().split(/\s+/).filter(Boolean);
   // any word may match (OR), with typo tolerance; the last word may still be unfinished
-  const loose = s => toks(s).map((t, i, a) => (i === a.length - 1 && t.length < 4) ? t + '*' : (t.length > 3 ? t + '~' : t)).join(' OR ');
+  // an unfinished last word of 1–2 letters is only used for ranking, not for the search itself
+  const words = s => { const t = toks(s); return (t.length > 1 && t[t.length - 1].length < 3) ? t.slice(0, -1) : t; };
+  const loose = s => words(s).map((t, i, a) => (i === a.length - 1 && t.length < 4) ? t + '*' : (t.length > 3 ? t + '~' : t)).join(' OR ');
+  const strict = s => words(s).join(' ');
   const G = lang => `https://${lang}.wikipedia.org/w/api.php?format=json&origin=*&action=query&generator=search&prop=description${lang === 'ru' ? '|langlinks&lllang=en' : ''}&gsrlimit=`;
   const reqs = cyr ? [
     getJ(G('ru') + '15&gsrsearch=' + encodeURIComponent(loose(q))),
-    getJ(G('ru') + '10&gsrsearch=' + encodeURIComponent(q + ' фотограф')),
+    getJ(G('ru') + '15&gsrsearch=' + encodeURIComponent(strict(q) + ' фотограф')),
     getJ(G('en') + '15&gsrsearch=' + encodeURIComponent(loose(norm(q)) + ' photographer'))
   ] : [
     getJ(G('en') + '15&gsrsearch=' + encodeURIComponent(loose(q))),
-    getJ(G('en') + '15&gsrsearch=' + encodeURIComponent(loose(q) + ' photographer')),
-    getJ('https://www.wikidata.org/w/api.php?format=json&origin=*&action=wbsearchentities&type=item&limit=10&language=en&uselang=ru&search=' + encodeURIComponent(q))
+    getJ(G('en') + '20&gsrsearch=' + encodeURIComponent(strict(q) + ' photographer')),
+    getJ('https://www.wikidata.org/w/api.php?format=json&origin=*&action=wbsearchentities&type=item&limit=10&language=en&uselang=en&search=' + encodeURIComponent(q))
   ];
   const res = await Promise.all(reqs);
   const out = [];
