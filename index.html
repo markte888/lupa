@@ -39,6 +39,12 @@ main{padding:22px 24px 60px;max-width:1900px;margin:0 auto}
 .sub{color:var(--muted);font-size:14px}
 .seg{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}.seg button{border:0;background:transparent;padding:8px 14px;cursor:pointer;color:var(--muted);font-size:14px}.seg button.on{background:#262626;color:var(--text)}
 .status{color:var(--muted);text-align:center;padding:22px;font-size:14px;min-height:20px}
+.sw{position:relative;flex:1;display:flex}
+.sugg{position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:30;background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.5);text-align:left}
+.sugg div{padding:10px 18px;cursor:pointer;display:flex;flex-direction:column;gap:1px}
+.sugg div:hover,.sugg div.on{background:#262626}
+.sugg b{font-weight:600;font-size:15px}.sugg span{color:var(--muted);font-size:13px}
+.sugg .ph{color:var(--acc)}
 /* grid */
 .masonry{columns:236px;column-gap:12px}
 .tile{break-inside:avoid;margin:0 0 12px;border-radius:14px;overflow:hidden;background:var(--panel2);position:relative;cursor:zoom-in;animation:in .35s both}
@@ -344,13 +350,13 @@ function render(){
 function renderSearch(m){
   if (!query) {
     m.innerHTML = `<div class="hero"><h1>Чьи снимки смотрим?</h1><p>Впишите имя фотографа и нажмите Enter</p>
-      <form class="bar" id="sf"><input id="si" placeholder="Например: Saul Leiter" autocomplete="off"><button class="btn primary">Найти</button></form>
+      <form class="bar" id="sf"><div class="sw"><input id="si" placeholder="Например: Saul Leiter" autocomplete="off" style="width:100%"><div class="sugg" id="sugg" hidden></div></div><button class="btn primary">Найти</button></form>
       <div class="chips" style="justify-content:center">${['Morton Bartlett','Saul Leiter','Vivian Maier','Rinko Kawauchi','Francesca Woodman','Daido Moriyama'].map(n => `<button class="chip" data-q="${esc(n)}">${esc(n)}</button>`).join('')}</div>
       ${key() ? '' : keyPanel()}</div>`;
     bindSearch(); bindKey(); setTimeout(() => $('#si') && $('#si').focus(), 30); return;
   }
   const name = query, fav = isFav(name);
-  m.innerHTML = `<form class="bar" id="sf"><input id="si" value="${esc(name)}" autocomplete="off"><button class="btn primary">Найти</button></form>
+  m.innerHTML = `<form class="bar" id="sf"><div class="sw"><input id="si" value="${esc(name)}" autocomplete="off" style="width:100%"><div class="sugg" id="sugg" hidden></div></div><button class="btn primary">Найти</button></form>
     <div class="rhead"><div class="l"><h2>${esc(name)}</h2><button class="btn star ${fav ? 'on' : ''}" data-fav="${esc(name)}">${fav ? '★ В избранном' : '☆ В избранное'}</button></div>${modeSeg()}</div>
     <div id="vbox"></div>`;
   bindSearch();
@@ -358,7 +364,51 @@ function renderSearch(m){
   makeView($('#vbox'), cachedItems(name), { key: 'search:' + slug(name), more: () => fetchMore(name, 3), empty: 'Ничего не нашлось — проверьте написание имени.' });
 }
 function bindSearch(){
-  $('#sf').addEventListener('submit', e => { e.preventDefault(); const v = $('#si').value.trim(); query = v; LS.set('query', v); render(); });
+  const inp = $('#si'), box = $('#sugg'); let list = [], hi = -1, timer, seq = 0;
+  const go = v => { v = v.trim(); query = v; LS.set('query', v); render(); };
+  const close = () => { box.hidden = true; hi = -1; };
+  const draw = () => {
+    if (!list.length) return close();
+    box.innerHTML = list.map((s, i) => `<div class="${i === hi ? 'on' : ''}" data-i="${i}"><b>${esc(s.name)}</b><span class="${s.photo ? 'ph' : ''}">${esc(s.desc || '')}</span></div>`).join('');
+    box.hidden = false;
+  };
+  inp.addEventListener('input', () => {
+    clearTimeout(timer); const q = inp.value.trim();
+    if (q.length < 2) { list = []; return close(); }
+    timer = setTimeout(async () => { const my = ++seq; const r = await suggest(q); if (my !== seq || document.activeElement !== inp) return; list = r; hi = -1; draw(); }, 250);
+  });
+  inp.addEventListener('keydown', e => {
+    if (box.hidden) return;
+    if (e.key === 'ArrowDown') { e.preventDefault(); hi = Math.min(list.length - 1, hi + 1); draw(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); hi = Math.max(-1, hi - 1); draw(); }
+    else if (e.key === 'Escape') close();
+    else if (e.key === 'Enter' && hi >= 0) { e.preventDefault(); go(list[hi].name); }
+  });
+  box.addEventListener('mousedown', e => { const d = e.target.closest('[data-i]'); if (d) { e.preventDefault(); go(list[+d.dataset.i].name); } });
+  inp.addEventListener('blur', () => setTimeout(close, 150));
+  $('#sf').addEventListener('submit', e => { e.preventDefault(); go(inp.value); });
+}
+/* name suggestions: Wikidata (prefix) + Wikipedia search (tolerates typos); photographers first */
+const sugCache = new Map();
+async function suggest(q){
+  const k = q.toLowerCase(); if (sugCache.has(k)) return sugCache.get(k);
+  const isPhoto = d => /photograph|фотограф/i.test(d || '');
+  const isArt = d => /artist|painter|sculptor|художник|скульптор|живописец/i.test(d || '');
+  const out = []; const seen = new Set();
+  const push = (name, desc) => { const n = String(name || '').replace(/\s*\(.*?\)\s*$/, '').trim(); if (!n || seen.has(n.toLowerCase())) return; seen.add(n.toLowerCase()); out.push({ name: n, desc, photo: isPhoto(desc), art: isArt(desc) }); };
+  try {
+    const [wdj, wpj] = await Promise.all([
+      fetch('https://www.wikidata.org/w/api.php?action=wbsearchentities&format=json&origin=*&type=item&limit=10&language=en&uselang=ru&search=' + encodeURIComponent(q)).then(r => r.json()).catch(() => ({})),
+      fetch('https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&list=search&srlimit=8&srinfo=suggestion&srprop=snippet&srsearch=' + encodeURIComponent(q + ' photographer')).then(r => r.json()).catch(() => ({}))
+    ]);
+    for (const s of (wdj.search || [])) push(s.label, s.description);
+    let ws = (wpj.query && wpj.query.search) || [];
+    const sg = wpj.query && wpj.query.searchinfo && wpj.query.searchinfo.suggestion;
+    if (ws.length < 2 && sg) { const j2 = await fetch('https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&list=search&srlimit=8&srprop=snippet&srsearch=' + encodeURIComponent(sg)).then(r => r.json()).catch(() => ({})); ws = ws.concat((j2.query && j2.query.search) || []); }
+    for (const s of ws) { const snip = String(s.snippet || '').replace(/<[^>]+>/g, ''); if (/photograph|artist|painter|sculptor/i.test(snip)) push(s.title, /photograph/i.test(snip) ? 'фотограф (Википедия)' : 'художник (Википедия)'); }
+  } catch {}
+  const ranked = out.filter(s => s.photo).concat(out.filter(s => !s.photo && s.art), out.filter(s => !s.photo && !s.art)).slice(0, 8);
+  sugCache.set(k, ranked); return ranked;
 }
 
 /* ---- 2. pins ---- */
