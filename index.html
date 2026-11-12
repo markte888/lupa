@@ -11,58 +11,60 @@
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 var(--f);-webkit-font-smoothing:antialiased}
 a{color:inherit}button,input{font:inherit;color:inherit}[hidden]{display:none!important}
-.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:22px;padding:12px 24px;background:rgba(15,15,15,.9);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:20px;padding:12px 24px;background:rgba(15,15,15,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
 .logo{font-weight:700;font-size:22px;letter-spacing:-.02em}.logo i{color:var(--acc);font-style:normal}
-.tabs{display:flex;gap:4px;flex:1}
+.tabs{display:flex;gap:4px;flex:1;flex-wrap:wrap}
 .tabs button{border:0;background:transparent;color:var(--muted);padding:9px 16px;border-radius:999px;cursor:pointer;font-weight:500;font-size:15px}
 .tabs button:hover{color:var(--text)}.tabs button.on{background:var(--text);color:#111}
-.tabs small{opacity:.6;margin-left:4px}
+.tabs small{opacity:.55;margin-left:5px}
 .btn{display:inline-flex;align-items:center;gap:6px;font-weight:500;border:1px solid var(--line);background:transparent;padding:9px 16px;border-radius:999px;cursor:pointer;white-space:nowrap;font-size:14px;text-decoration:none}
 .btn:hover{border-color:#555}.btn.primary{background:var(--text);color:#111;border-color:var(--text)}.btn.ghost{border-color:transparent;color:var(--muted)}.btn.ghost:hover{color:var(--text)}
-.btn:disabled{opacity:.4;cursor:default}
-main{padding:24px 24px 90px;max-width:1900px;margin:0 auto}
-.bar{display:flex;gap:10px;max-width:760px;margin:0 auto 26px}
+.btn.star.on{color:var(--acc);border-color:var(--acc)}
+main{padding:22px 24px 60px;max-width:1900px;margin:0 auto}
+.bar{display:flex;gap:10px;max-width:760px;margin:0 auto 22px}
 .bar input{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:14px 22px;outline:none;font-size:17px}
 .bar input:focus{border-color:#555}
-.hero{min-height:56vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
-.hero h1{font-size:clamp(34px,5vw,56px);letter-spacing:-.03em;margin:0 0 8px}
-.hero p{color:var(--muted);margin:0 0 26px}
+.hero{min-height:50vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+.hero h1{font-size:clamp(32px,5vw,54px);letter-spacing:-.03em;margin:0 0 8px}
+.hero p{color:var(--muted);margin:0 0 24px;max-width:560px}
 .hero .bar{width:100%}
-.hint{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
-.chip{border:1px solid var(--line);background:transparent;border-radius:999px;padding:6px 13px;font-size:13px;color:var(--muted);cursor:pointer}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:transparent;border-radius:999px;padding:6px 13px;font-size:13px;color:var(--muted);cursor:pointer;display:inline-flex;gap:8px;align-items:center}
 .chip:hover{color:var(--text);border-color:#555}
-.rhead{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:16px}
-.rhead h2{font-size:30px;letter-spacing:-.02em;margin:0}
+.chip .x,.chip .s{opacity:.7}.chip .x:hover,.chip .s:hover{opacity:1;color:var(--acc)}
+.chip em{font-style:normal;font-size:11px;color:var(--acc)}
+.rhead{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.rhead h2{font-size:28px;letter-spacing:-.02em;margin:0}
+.rhead .l{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .sub{color:var(--muted);font-size:14px}
+.seg{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}.seg button{border:0;background:transparent;padding:8px 14px;cursor:pointer;color:var(--muted);font-size:14px}.seg button.on{background:#262626;color:var(--text)}
+.status{color:var(--muted);text-align:center;padding:22px;font-size:14px;min-height:20px}
+/* grid */
 .masonry{columns:236px;column-gap:12px}
 .tile{break-inside:avoid;margin:0 0 12px;border-radius:14px;overflow:hidden;background:var(--panel2);position:relative;cursor:zoom-in;animation:in .35s both}
 @keyframes in{from{opacity:0;transform:translateY(6px)}}
 .tile img{display:block;width:100%;height:auto}
-.tile .ov{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:10px;background:linear-gradient(rgba(0,0,0,.35),transparent 30%,transparent 55%,rgba(0,0,0,.8));opacity:0;transition:.2s}
+.tile .ov{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:10px;background:linear-gradient(rgba(0,0,0,.3),transparent 30%,transparent 55%,rgba(0,0,0,.8));opacity:0;transition:.2s}
 .tile:hover .ov{opacity:1}
 .ov .tr{display:flex;justify-content:flex-end}
-.ov .x{width:30px;height:30px;border-radius:50%;border:0;background:rgba(15,15,15,.75);cursor:pointer}
-.ov .src{font-size:12px;line-height:1.35;color:#ddd;text-decoration:none}
-.ov .src b{display:block;color:#fff;font-weight:600}
-.status{color:var(--muted);text-align:center;padding:28px;font-size:14px}
-/* artists */
-.agrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:18px}
-.acard{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
-.acover{aspect-ratio:4/3;background:var(--panel2);display:grid;grid-template-columns:2fr 1fr;grid-template-rows:1fr 1fr;gap:2px;cursor:pointer}
-.acover img{width:100%;height:100%;object-fit:cover;display:block}
-.acover img:first-child{grid-row:span 2}
-.acover .ph{grid-column:span 2;grid-row:span 2;display:grid;place-items:center;color:var(--muted);font-size:13px}
-.abody{padding:12px 14px 14px;display:flex;flex-direction:column;gap:2px;flex:1}
-.abody b{font-size:16px}
-.abody .d{color:var(--muted);font-size:13px;line-height:1.35;flex:1}
-.aact{display:flex;gap:6px;margin-top:10px}.aact .btn{padding:6px 12px;font-size:13px}
-.section{margin:40px 0 16px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
-.section h3{font-size:22px;margin:0;letter-spacing:-.02em}
-.rcard{background:var(--panel);border:1px dashed #3a3a3a;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:4px}
-.rcard b{font-size:16px}.rcard .d{color:var(--muted);font-size:13px;line-height:1.35;flex:1}
-.rcard .why{font-size:12px;color:var(--acc)}
-.empty{max-width:620px;margin:40px auto;border:1px solid var(--line);border-radius:18px;padding:32px;background:var(--panel)}
-.empty h2{margin:0 0 8px;font-size:26px;letter-spacing:-.02em}
+.ov .src{font-size:12px;line-height:1.35;color:#ddd;text-decoration:none}.ov .src b{display:block;color:#fff;font-weight:600}
+.pin{border:0;background:rgba(15,15,15,.75);border-radius:999px;padding:6px 12px;cursor:pointer;font-size:13px;font-weight:600;color:#fff}
+.pin.on{background:var(--acc);color:#111}
+.tile .pin.on{opacity:1}
+/* carousel */
+.cv{display:flex;align-items:center;gap:22px;overflow-x:auto;scroll-snap-type:x mandatory;height:calc(100vh - 290px);min-height:340px;scrollbar-width:none;margin:0 -24px}
+.cv::-webkit-scrollbar{display:none}
+.cv .pad{flex:0 0 calc(50% - 22px)}
+.slide{flex:0 0 auto;height:100%;scroll-snap-align:center;display:flex;align-items:center;opacity:.3;transform:scale(.94);transition:opacity .4s,transform .4s;cursor:pointer}
+.slide.on{opacity:1;transform:none;cursor:zoom-in}
+.slide img{max-height:100%;max-width:78vw;display:block;border-radius:4px;box-shadow:0 30px 80px rgba(0,0,0,.5);min-width:120px;background:var(--panel2)}
+.cvbar{display:flex;align-items:center;gap:10px;padding-top:14px;flex-wrap:wrap}
+.cvbar .cap{flex:1;min-width:160px;font-size:14px;color:#d6d1c6}.cvbar .cap b{color:#fff}.cvbar .cap a{color:var(--acc);text-decoration:none}
+.arrow{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:transparent;font-size:22px;cursor:pointer}
+.cvbar .pin{padding:9px 16px;background:#262626}.cvbar .pin.on{background:var(--acc)}
+/* key panel */
+.empty{max-width:640px;margin:30px auto;border:1px solid var(--line);border-radius:18px;padding:30px;background:var(--panel)}
+.empty h2{margin:0 0 8px;font-size:24px;letter-spacing:-.02em}
 .empty ol{line-height:1.9;padding-left:20px}.empty a{color:var(--acc)}
 .empty input{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px 14px;outline:none;margin:10px 0}
 /* lightbox */
@@ -71,10 +73,11 @@ main{padding:24px 24px 90px;max-width:1900px;margin:0 auto}
 .lb .st img{max-width:100%;max-height:100%;object-fit:contain}
 .lb .nav{position:absolute;top:50%;transform:translateY(-50%);width:50px;height:50px;border-radius:50%;border:1px solid #333;background:rgba(20,20,20,.6);font-size:24px;cursor:pointer}
 .lb .pv{left:14px}.lb .nx{right:14px}.lb .cl{position:absolute;top:14px;right:14px}
-.lb .lbar{display:flex;gap:14px;align-items:center;padding:12px 22px 18px;flex-wrap:wrap}
+.lb .lbar{display:flex;gap:12px;align-items:center;padding:12px 22px 18px;flex-wrap:wrap}
 .lb .t{flex:1;min-width:200px}.lb .t b{display:block}.lb .t span{color:var(--muted);font-size:13px}
+.lb .pin{padding:9px 16px;background:#262626}.lb .pin.on{background:var(--acc)}
 .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:80;background:var(--text);color:#111;padding:10px 18px;border-radius:999px;font-weight:500;font-size:14px}
-@media(max-width:700px){.top{padding:10px 12px;gap:8px;flex-wrap:wrap}.tabs{order:3;flex-basis:100%}.tabs button{padding:7px 12px;font-size:14px}main{padding:16px 12px 80px}.masonry{columns:2;column-gap:8px}.tile{margin-bottom:8px;border-radius:10px}.lb .st{padding:10px}.agrid{grid-template-columns:1fr 1fr;gap:10px}}
+@media(max-width:700px){.top{padding:10px 12px;gap:8px;flex-wrap:wrap}.tabs{order:3;flex-basis:100%}.tabs button{padding:7px 11px;font-size:14px}main{padding:14px 12px 60px}.masonry{columns:2;column-gap:8px}.tile{margin-bottom:8px;border-radius:10px}.cv{margin:0 -12px;gap:10px;height:calc(100vh - 330px)}.slide img{max-width:84vw}.lb .st{padding:10px}.ov{opacity:1!important;background:linear-gradient(transparent 60%,rgba(0,0,0,.7))!important}.ov .src{display:none}}
 </style>
 </head>
 <body>
@@ -82,8 +85,9 @@ main{padding:24px 24px 90px;max-width:1900px;margin:0 auto}
   <div class="logo">Лупа<i>.</i></div>
   <nav class="tabs" id="tabs">
     <button data-t="search">Поиск</button>
-    <button data-t="mine">Мои фотографы<small id="cntMine"></small></button>
-    <button data-t="feed">Лента</button>
+    <button data-t="pins">Пины<small id="nPins"></small></button>
+    <button data-t="favs">Избранные<small id="nFavs"></small></button>
+    <button data-t="recs">Для вас</button>
   </nav>
   <button class="btn ghost" id="keyBtn" title="Ключ поиска">⚙︎</button>
 </header>
@@ -93,7 +97,7 @@ main{padding:24px 24px 90px;max-width:1900px;margin:0 auto}
   <button class="btn cl" id="lbX">Закрыть ✕</button>
   <div class="st" id="lbSt"><img id="lbImg" alt="" referrerpolicy="no-referrer"></div>
   <button class="nav pv" id="lbP">‹</button><button class="nav nx" id="lbN">›</button>
-  <div class="lbar"><div class="t" id="lbT"></div><span class="sub" id="lbC"></span><a class="btn" id="lbSrc" target="_blank" rel="noopener">Открыть источник ↗</a><button class="btn ghost" id="lbHide">Скрыть</button></div>
+  <div class="lbar"><div class="t" id="lbT"></div><span class="sub" id="lbC"></span><button class="pin" id="lbPin">📌 Пин</button><a class="btn" id="lbSrc" target="_blank" rel="noopener">Источник ↗</a></div>
 </div>
 <div class="toast" id="toast" hidden></div>
 
@@ -103,33 +107,32 @@ const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const LS = {
   get(k, d){ try { const v = localStorage.getItem('lupa2.' + k); return v ? JSON.parse(v) : d; } catch { return d; } },
-  set(k, v){ try { localStorage.setItem('lupa2.' + k, JSON.stringify(v)); } catch { toast('Память браузера заполнена — удалите кого-нибудь из «Моих фотографов»'); } },
-  del(k){ try { localStorage.removeItem('lupa2.' + k); } catch {} }
+  set(k, v){ try { localStorage.setItem('lupa2.' + k, JSON.stringify(v)); } catch { toast('Память браузера заполнена'); } }
 };
-let tt; function toast(t, ms = 2600){ const el = $('#toast'); el.textContent = t; el.hidden = false; clearTimeout(tt); tt = setTimeout(() => el.hidden = true, ms); }
-const slug = n => n.trim().toLowerCase().replace(/\s+/g, '-');
-const pl = (n, a, b, c) => { const m = n % 10, h = n % 100; return m === 1 && h !== 11 ? a : (m >= 2 && m <= 4 && (h < 10 || h >= 20) ? b : c); };
+let tt; function toast(t, ms = 2400){ const el = $('#toast'); el.textContent = t; el.hidden = false; clearTimeout(tt); tt = setTimeout(() => el.hidden = true, ms); }
+const slug = n => n.trim().toLowerCase().replace(/\s+/g, ' ');
 const hashStr = s => { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return Math.abs(h).toString(36); };
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const pl = (n, a, b, c) => { const m = n % 10, h = n % 100; return m === 1 && h !== 11 ? a : (m >= 2 && m <= 4 && (h < 10 || h >= 20) ? b : c); };
 
-/* ================= data ================= */
+/* ============ state ============ */
 let tab = LS.get('tab', 'search');
-let artists = LS.get('artists', []);          // [{name, slug, desc, added}]
-let lastQuery = LS.get('lastQuery', '');
+let mode = LS.get('mode', 'cv');                 // 'cv' carousel | 'grid'
+let query = LS.get('query', '');
+let favs = LS.get('favs', []);                   // [{name, added}]
+let pins = LS.get('pins', []);                   // [{id,img,thumb,w,h,title,link,domain,owner}]
 const key = () => LS.get('key', '');
-const isMine = name => artists.some(a => a.slug === slug(name));
+const isFav = n => favs.some(f => slug(f.name) === slug(n));
+const isPinned = id => pins.some(p => p.id === id);
 
-// image cache per photographer: items as [img, thumb, w, h, title, link, domain]
-const cache = s => { const d = LS.get('c.' + s, null) || { items: [], step: 0, done: false, hide: [] }; return d; };
-const saveCache = (s, d) => LS.set('c.' + s, d);
-const toObj = (a, owner) => ({ id: hashStr(a[0]), img: a[0], thumb: a[1], w: a[2], h: a[3], title: a[4], link: a[5], domain: a[6], owner });
-const visibleItems = (s, owner) => { const d = cache(s); return d.items.filter(a => !d.hide.includes(hashStr(a[0]))).map(a => toObj(a, owner)); };
-
-/* ================= image search (Serper) ================= */
-const TAILS = ['photograph', '', 'photography', 'photo', 'photographs', 'untitled', 'print', 'gelatin silver print', 'chromogenic print', 'vintage print', 'exhibition', 'museum', 'gallery', 'collection', 'book', 'archive', 'artwork', 'art', 'works', 'black and white', 'color photograph', 'portrait', 'series', 'auction', 'retrospective', 'фото', 'Fotografie', 'photographie', 'fotografia', '1930s', '1950s', '1970s'];
+/* ============ image search (Serper → Google Images) ============ */
+const TAILS = ['photography', 'photograph', 'photographer', 'photographs', 'photo', 'untitled photograph', 'gelatin silver print', 'chromogenic print', 'vintage print', 'photography exhibition', 'photography museum', 'photography gallery', 'photobook', 'photography archive', 'photography series', 'black and white photography', 'color photography', 'portrait photography', 'photography retrospective', 'photography auction', 'фотограф', 'Fotografie', 'photographie', 'fotografia', 'work', 'artwork', '1950s photograph', '1970s photograph'];
 const normUrl = u => String(u || '').toLowerCase().replace(/^https?:\/\/(www\.)?/, '').replace(/[?#].*$/, '').replace(/(-\d+x\d+|_\d+x\d+|-scaled|@2x)(?=\.\w+$)/, '');
+const cache = n => LS.get('c.' + slug(n), null) || { items: [], step: 0, done: false };
+const saveCache = (n, d) => LS.set('c.' + slug(n), d);
+const toObj = (a, owner) => ({ id: hashStr(a[0]), img: a[0], thumb: a[1], w: a[2], h: a[3], title: a[4], link: a[5], domain: a[6], owner });
+const cachedItems = n => cache(n).items.map(a => toObj(a, n));
 const running = new Set();
-const gImg = n => 'https://www.google.com/search?tbm=isch&q=' + encodeURIComponent(n + ' photography');
-const pinS = n => 'https://www.pinterest.com/search/pins/?q=' + encodeURIComponent(n + ' photography');
 
 async function serper(q){
   const r = await fetch('https://google.serper.dev/images', { method: 'POST', headers: { 'X-API-KEY': key(), 'Content-Type': 'application/json' }, body: JSON.stringify({ q, safe: 'active' }) });
@@ -138,18 +141,16 @@ async function serper(q){
   if (!r.ok) throw { code: 'http', status: r.status, text: await r.text().catch(() => '') };
   const j = await r.json(); return Array.isArray(j.images) ? j.images : [];
 }
-/* fetch `steps` more queries for a name; onNew(items) called as images arrive */
-async function fetchMore(name, steps, onNew){
-  const s = slug(name); if (running.has(s) || !key()) return false;
-  const d = cache(s); if (d.done) return false;
-  running.add(s); let ok = true;
+/* runs `steps` more queries for a name. returns array of new items, or null when nothing more can be loaded */
+async function fetchMore(name, steps){
+  const s = slug(name); if (running.has(s) || !key()) return null;
+  const d = cache(name); if (d.done) return null;
+  running.add(s);
   const seen = new Set(d.items.map(a => normUrl(a[0]))), seenT = new Set(d.items.map(a => a[1]));
-  const base = name.replace(/["']/g, '').trim();
+  const base = name.replace(/["']/g, '').trim(); const fresh = [];
   try {
     for (let n = 0; n < steps && d.step < TAILS.length; n++) {
-      const res = await serper((base + ' ' + TAILS[d.step]).trim());
-      d.step++;
-      const fresh = [];
+      const res = await serper(base + ' ' + TAILS[d.step]); d.step++;
       for (const x of res) {
         const img = x.imageUrl; if (!img || !/^https?:/.test(img)) continue;
         const k = normUrl(img); if (seen.has(k) || (x.thumbnailUrl && seenT.has(x.thumbnailUrl))) continue;
@@ -158,21 +159,21 @@ async function fetchMore(name, steps, onNew){
         d.items.push(a); fresh.push(toObj(a, name));
       }
       if (d.step >= TAILS.length) d.done = true;
-      saveCache(s, d);
-      if (fresh.length && onNew) onNew(fresh);
     }
+    saveCache(name, d);
+    return fresh;
   } catch (e) {
-    saveCache(s, d); ok = false;
-    if (e.code === 'key') { toast('Ключ поиска не подошёл — введите его заново', 5000); LS.set('key', ''); render(); }
+    saveCache(name, d);
+    if (e.code === 'key') { toast('Ключ поиска не подошёл — проверьте его в ⚙︎', 5000); }
     else if (e.code === 'rate') toast('Сервис поиска просит паузу — попробуйте через минуту');
-    else if (e.code === 'http') toast(/credits|quota|balance/i.test(e.text) ? 'Закончились запросы Serper — пополните на serper.dev' : 'Ошибка поиска: ' + e.status);
+    else if (e.code === 'http') toast(/credit|quota|balance/i.test(e.text) ? 'Закончились запросы Serper — пополните на serper.dev' : 'Ошибка поиска: ' + e.status);
     else toast('Нет соединения с поиском');
+    return fresh.length ? fresh : null;
   } finally { running.delete(s); }
-  return ok;
 }
 
-/* hide broken/visual duplicates (compares tiny thumbnails when the browser allows) */
-const hashes = new Map();
+/* visual duplicate check on tiny thumbnails (when the browser allows reading them) */
+let hashes = new Map();
 function dhash(url){
   return new Promise(res => {
     if (!url) return res(null);
@@ -182,249 +183,299 @@ function dhash(url){
   });
 }
 const ham = (a, b) => { let n = 0; for (let i = 0; i < 64; i++) if (a[i] !== b[i]) n++; return n; };
-async function dupCheck(it, el){
-  const h = await dhash(it.thumb); if (!h) return;
-  for (const [id, o] of hashes) if (id !== it.id && ham(h, o) <= 2) { el.remove(); return; }
-  hashes.set(it.id, h);
+
+/* ============ view: carousel or grid, with pins and endless loading ============ */
+let view = null;
+function makeView(box, initial, opts){
+  if (view && view.io) view.io.disconnect();
+  hashes = new Map();
+  const v = { box, items: [], opts, done: false, loading: false, idx: 0 };
+  view = v;
+  if (mode === 'grid') {
+    box.innerHTML = `<div class="masonry"></div><div class="status"></div>`;
+    v.wrap = box.querySelector('.masonry');
+  } else {
+    box.innerHTML = `<div class="cv"><div class="pad"></div><div class="pad"></div></div>
+      <div class="cvbar"><button class="arrow" data-cv="-1">‹</button><button class="arrow" data-cv="1">›</button><span class="sub cn"></span><span class="cap"></span><button class="pin" data-pinactive="1">📌 Пин</button></div><div class="status"></div>`;
+    v.wrap = box.querySelector('.cv'); v.endPad = v.wrap.lastElementChild;
+    let raf; v.wrap.addEventListener('scroll', () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => cvSync(v)); }, { passive: true });
+  }
+  v.st = box.querySelector('.status');
+  add(v, initial);
+  if (mode === 'grid') {
+    v.io = new IntersectionObserver(es => { if (es[0].isIntersecting) more(v); }, { rootMargin: '1400px' });
+    v.io.observe(v.st);
+  } else requestAnimationFrame(() => cvSync(v));
+  if (!v.items.length) more(v); else status(v, '');
+  return v;
+}
+function status(v, t){ if (v === view) v.st.textContent = t; }
+function add(v, arr){
+  for (const it of arr) {
+    if (v.items.some(x => x.id === it.id)) continue;
+    v.items.push(it);
+    const el = document.createElement(mode === 'grid' ? 'figure' : 'div');
+    el.dataset.id = it.id;
+    const r = it.w && it.h ? `aspect-ratio:${it.w}/${it.h};` : '';
+    if (mode === 'grid') {
+      el.className = 'tile';
+      el.innerHTML = `<img src="${esc(it.img)}" alt="" loading="lazy" referrerpolicy="no-referrer" style="${r}">
+        <div class="ov"><div class="tr"><button class="pin ${isPinned(it.id) ? 'on' : ''}" data-pin="${esc(it.id)}">${isPinned(it.id) ? '📌 Запинено' : '📌 Пин'}</button></div>
+        <a class="src" href="${esc(it.link || it.img)}" target="_blank" rel="noopener"><b>${esc(it.owner)}</b>${esc(it.domain)} ↗</a></div>`;
+      v.wrap.appendChild(el);
+    } else {
+      el.className = 'slide';
+      el.innerHTML = `<img src="${esc(it.img)}" alt="" referrerpolicy="no-referrer" ${v.items.length > 6 ? 'loading="lazy"' : ''} style="${r}">`;
+      v.wrap.insertBefore(el, v.endPad);
+    }
+    const im = el.querySelector('img');
+    im.onerror = () => { if (it.thumb && im.src !== it.thumb) { im.src = it.thumb; im.style.aspectRatio = ''; } else drop(v, it.id); };
+    dhash(it.thumb).then(h => { if (!h) return; for (const [id, o] of hashes) if (id !== it.id && ham(h, o) <= 2) { drop(v, it.id); return; } hashes.set(it.id, h); });
+  }
+  if (mode === 'cv') cvSync(v);
+}
+function drop(v, id){
+  const el = v.box.querySelector(`[data-id="${id}"]`); if (el) el.remove();
+  v.items = v.items.filter(x => x.id !== id);
+  if (mode === 'cv') cvSync(v);
+}
+async function more(v){
+  if (v.loading || v.done || !v.opts.more) { if (!v.opts.more && !v.items.length) status(v, v.opts.empty || ''); return; }
+  v.loading = true; status(v, 'Ищу снимки…');
+  const fresh = await v.opts.more();
+  v.loading = false;
+  if (v !== view) return;
+  if (fresh === null) { v.done = true; status(v, v.items.length ? (mode === 'grid' ? 'Это всё, что нашлось.' : '') : (v.opts.empty || 'Ничего не нашлось.')); return; }
+  add(v, fresh); status(v, '');
+  if (mode === 'grid') { const r = v.st.getBoundingClientRect(); if (r.top < innerHeight + 1400) more(v); }
+  else if (v.items.length - v.idx < 6) more(v);
+}
+function cvSync(v){
+  if (v !== view || mode !== 'cv') return;
+  const cv = v.wrap; const sl = [...cv.querySelectorAll('.slide')];
+  const bar = v.box.querySelector('.cvbar');
+  if (!sl.length) { bar.querySelector('.cn').textContent = ''; bar.querySelector('.cap').innerHTML = ''; bar.querySelector('.pin').hidden = true; return; }
+  const mid = cv.scrollLeft + cv.clientWidth / 2; let best = 0, bd = 1e9;
+  sl.forEach((s, i) => { const d = Math.abs(s.offsetLeft + s.offsetWidth / 2 - mid); if (d < bd) { bd = d; best = i; } });
+  sl.forEach((s, i) => s.classList.toggle('on', i === best));
+  v.idx = best;
+  const it = v.items.find(x => x.id === sl[best].dataset.id); if (!it) return;
+  bar.querySelector('.cn').textContent = `${best + 1} / ${sl.length}`;
+  bar.querySelector('.cap').innerHTML = `<b>${esc(it.owner)}</b> · ${esc(it.title)} · <a href="${esc(it.link || it.img)}" target="_blank" rel="noopener">${esc(it.domain)} ↗</a>`;
+  const pb = bar.querySelector('.pin'); pb.hidden = false; pb.dataset.pin = it.id; setPinBtn(pb, isPinned(it.id));
+  if (sl.length - best < 6) more(v);
+}
+function cvGo(v, i){ const sl = v.wrap.querySelectorAll('.slide'); i = Math.max(0, Math.min(sl.length - 1, i)); const s = sl[i]; if (s) v.wrap.scrollTo({ left: s.offsetLeft + s.offsetWidth / 2 - v.wrap.clientWidth / 2, behavior: 'smooth' }); }
+function setPinBtn(b, on){ b.classList.toggle('on', on); b.textContent = on ? '📌 Запинено' : '📌 Пин'; }
+
+/* pins */
+function togglePin(id){
+  const it = (view && view.items.find(x => x.id === id)) || pins.find(p => p.id === id); if (!it) return;
+  if (isPinned(id)) { pins = pins.filter(p => p.id !== id); toast('Убрано из пинов'); }
+  else { pins.unshift({ id: it.id, img: it.img, thumb: it.thumb, w: it.w, h: it.h, title: it.title, link: it.link, domain: it.domain, owner: it.owner }); toast('Запинено'); }
+  LS.set('pins', pins); LS.set('recDirty', true);
+  document.querySelectorAll(`[data-pin="${id}"]`).forEach(b => setPinBtn(b, isPinned(id)));
+  if (!$('#lb').hidden) syncLb();
+  counts();
+  if (tab === 'pins' && !isPinned(id) && view) drop(view, id);
 }
 
-/* ================= tiles & masonry ================= */
-let current = [];   // list shown in current masonry (for lightbox)
-function tile(it){
-  const el = document.createElement('figure'); el.className = 'tile'; el.dataset.id = it.id;
-  const r = it.w && it.h ? `aspect-ratio:${it.w}/${it.h}` : '';
-  el.innerHTML = `<img src="${esc(it.img)}" alt="" loading="lazy" referrerpolicy="no-referrer" style="${r}">
-    <div class="ov"><div class="tr"><button class="x" title="Скрыть" data-hide="${esc(it.id)}">✕</button></div>
-    <a class="src" href="${esc(it.link || it.img)}" target="_blank" rel="noopener"><b>${esc(tab === 'feed' ? it.owner : it.title)}</b>${esc(it.domain)} ↗</a></div>`;
-  const im = el.querySelector('img');
-  im.onerror = () => { if (it.thumb && im.src !== it.thumb) { im.src = it.thumb; im.style.aspectRatio = ''; } else el.remove(); };
-  current.push(it);
-  dupCheck(it, el);
-  return el;
-}
-function hideItem(id){
-  const it = current.find(x => x.id === id); if (!it) return;
-  const s = slug(it.owner); const d = cache(s); if (!d.hide.includes(id)) { d.hide.push(id); saveCache(s, d); }
-  document.querySelectorAll(`.tile[data-id="${id}"]`).forEach(e => e.remove());
-  current = current.filter(x => x.id !== id);
-  toast('Скрыто');
-}
-let io;
-function watchEnd(el, fn){ if (io) io.disconnect(); io = new IntersectionObserver(es => { if (es[0].isIntersecting) fn(); }, { rootMargin: '1400px' }); io.observe(el); }
-
-/* ================= render ================= */
-function render(){
-  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === tab));
-  $('#cntMine').textContent = artists.length ? artists.length : '';
-  current = []; hashes.clear(); if (io) io.disconnect();
-  if (showKey) { renderKey(); return; }
-  if (tab === 'search') renderSearch();
-  else if (tab === 'mine') renderMine();
-  else renderFeed();
-  window.scrollTo(0, 0);
-}
-function setTab(t){ tab = t; LS.set('tab', t); render(); }
+/* ============ header / tabs ============ */
+function counts(){ $('#nPins').textContent = pins.length || ''; $('#nFavs').textContent = favs.length || ''; }
+function setTab(t){ tab = t; LS.set('tab', t); render(); window.scrollTo(0, 0); }
 $('#tabs').addEventListener('click', e => { const b = e.target.closest('[data-t]'); if (b) setTab(b.dataset.t); });
+const modeSeg = () => `<div class="seg"><button data-mode="cv" class="${mode === 'cv' ? 'on' : ''}">Карусель</button><button data-mode="grid" class="${mode === 'grid' ? 'on' : ''}">Сетка</button></div>`;
 let showKey = false;
 $('#keyBtn').onclick = () => { showKey = true; render(); };
 
-function renderKey(){
-  $('#main').innerHTML = `<div class="empty"><h2>Снимки прямо на сайте (по желанию)</h2>
-    <div class="sub">Без ключа сайт работает полностью: снимки открываются в Google Картинках и Pinterest. С ключом сервиса Serper они показываются прямо здесь, сеткой. Новым пользователям Serper даёт бесплатные запросы.</div>
+function keyPanel(){
+  return `<div class="empty"><h2>Нужен ключ поиска картинок</h2>
+    <div class="sub">Снимки приходят из Google Картинок через сервис Serper. Новым пользователям он даёт бесплатные запросы. Ключ вводится один раз и хранится только в этом браузере.</div>
     <ol><li>Зарегистрируйтесь на <a href="https://serper.dev" target="_blank" rel="noopener">serper.dev</a>.</li>
     <li>Откройте <a href="https://serper.dev/api-key" target="_blank" rel="noopener">API Key</a> и скопируйте ключ.</li>
-    <li>Вставьте сюда — он хранится только в этом браузере.</li></ol>
-    <input id="keyIn" placeholder="Вставьте ключ (или оставьте пустым)" autocomplete="off"><button class="btn primary" id="keySave">Сохранить</button> <button class="btn ghost" id="keyBack">Назад</button></div>`;
-  $('#keyIn').value = key();
-  $('#keySave').onclick = () => { const v = $('#keyIn').value.trim(); LS.set('key', v); showKey = false; render(); };
-  $('#keyBack').onclick = () => { showKey = false; render(); };
+    <li>Вставьте его сюда.</li></ol>
+    <input id="keyIn" placeholder="Вставьте ключ" autocomplete="off" value="${esc(key())}"><button class="btn primary" id="keySave">Сохранить</button>${key() ? ' <button class="btn ghost" id="keyBack">Назад</button>' : ''}</div>`;
+}
+function bindKey(){
+  const s = $('#keySave'); if (!s) return;
+  s.onclick = () => { LS.set('key', $('#keyIn').value.trim()); showKey = false; render(); };
+  const b = $('#keyBack'); if (b) b.onclick = () => { showKey = false; render(); };
 }
 
-/* ---------- tab 1: search ---------- */
-function renderSearch(){
+function render(){
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === tab));
+  counts();
+  if (view && view.io) view.io.disconnect(); view = null;
   const m = $('#main');
-  if (!lastQuery) {
-    m.innerHTML = `<div class="hero"><h1>Чьи снимки смотрим?</h1><p>Впишите имя фотографа или художника</p>
-      <form class="bar" id="sf"><input id="si" placeholder="Например: Saul Leiter" autocomplete="off" autofocus><button class="btn primary">Найти</button></form>
-      <div class="hint">${['Morton Bartlett','Saul Leiter','Vivian Maier','Rinko Kawauchi','Francesca Woodman','Daido Moriyama'].map(n => `<button class="chip" data-q="${esc(n)}">${esc(n)}</button>`).join('')}</div></div>`;
-    bindSearchForm(); return;
+  if (showKey) { m.innerHTML = keyPanel(); bindKey(); return; }
+  if (tab === 'search') renderSearch(m);
+  else if (tab === 'pins') renderPins(m);
+  else if (tab === 'favs') renderFavs(m);
+  else renderRecs(m);
+}
+
+/* ---- 1. search ---- */
+function renderSearch(m){
+  if (!query) {
+    m.innerHTML = `<div class="hero"><h1>Чьи снимки смотрим?</h1><p>Впишите имя фотографа и нажмите Enter</p>
+      <form class="bar" id="sf"><input id="si" placeholder="Например: Saul Leiter" autocomplete="off"><button class="btn primary">Найти</button></form>
+      <div class="chips" style="justify-content:center">${['Morton Bartlett','Saul Leiter','Vivian Maier','Rinko Kawauchi','Francesca Woodman','Daido Moriyama'].map(n => `<button class="chip" data-q="${esc(n)}">${esc(n)}</button>`).join('')}</div>
+      ${key() ? '' : keyPanel()}</div>`;
+    bindSearch(); bindKey(); setTimeout(() => $('#si') && $('#si').focus(), 30); return;
   }
-  const name = lastQuery, s = slug(name), mine = isMine(name);
-  const ext = `<div class="hint" style="justify-content:flex-start;margin-bottom:18px"><a class="btn" href="${esc(gImg(name))}" target="_blank" rel="noopener">Google Картинки ↗</a><a class="btn" href="${esc(pinS(name))}" target="_blank" rel="noopener">Pinterest ↗</a></div>`;
-  if (!key()) {
-    m.innerHTML = `<form class="bar" id="sf"><input id="si" value="${esc(name)}" autocomplete="off"><button class="btn primary">Найти</button></form>
-      <div class="rhead"><div><h2>${esc(name)}</h2></div>${mine ? `<span class="sub">✓ В моих фотографах</span>` : `<button class="btn primary" data-add="${esc(name)}">+ Добавить в мои фотографы</button>`}</div>
-      <div class="empty" style="margin:20px 0;max-width:none"><h2>Смотреть снимки</h2><div class="sub" style="margin-bottom:16px">Откроются в новой вкладке. Чтобы снимки показывались прямо здесь, добавьте ключ поиска — кнопка ⚙︎ вверху.</div>${ext}</div>`;
-    bindSearchForm(); return;
-  }
+  const name = query, fav = isFav(name);
   m.innerHTML = `<form class="bar" id="sf"><input id="si" value="${esc(name)}" autocomplete="off"><button class="btn primary">Найти</button></form>
-    <div class="rhead"><div><h2>${esc(name)}</h2><div class="sub" id="cnt"></div></div>
-      ${mine ? `<span class="sub">✓ В моих фотографах</span>` : `<button class="btn primary" data-add="${esc(name)}">+ Добавить в мои фотографы</button>`}</div>
-    ${ext}<div class="masonry" id="grid"></div><div class="status" id="st"></div>`;
-  bindSearchForm();
-  const grid = $('#grid'); const items = visibleItems(s, name);
-  items.forEach(it => grid.appendChild(tile(it)));
-  const upd = () => { $('#cnt') && ($('#cnt').textContent = current.length + ' ' + pl(current.length, 'снимок', 'снимка', 'снимков')); };
-  upd();
-  const more = async () => {
-    if (lastQuery !== name || tab !== 'search') return;
-    const d = cache(s); const st = $('#st'); if (!st) return;
-    if (d.done) { st.textContent = current.length ? 'Это всё, что нашлось.' : 'Ничего не нашлось — проверьте написание имени.'; return; }
-    if (running.has(s)) return;
-    st.textContent = 'Ищу снимки…';
-    const ok = await fetchMore(name, 4, fresh => { if (lastQuery === name && tab === 'search' && $('#grid')) { fresh.forEach(it => $('#grid').appendChild(tile(it))); upd(); } });
-    if ($('#st')) $('#st').textContent = cache(s).done ? 'Это всё, что нашлось.' : '';
-    if (ok && tab === 'search' && lastQuery === name && $('#st')) { const r = $('#st').getBoundingClientRect(); if (r.top < innerHeight + 1400) more(); }
+    <div class="rhead"><div class="l"><h2>${esc(name)}</h2><button class="btn star ${fav ? 'on' : ''}" data-fav="${esc(name)}">${fav ? '★ В избранном' : '☆ В избранное'}</button></div>${modeSeg()}</div>
+    <div id="vbox"></div>`;
+  bindSearch();
+  if (!key()) { $('#vbox').innerHTML = keyPanel(); bindKey(); return; }
+  makeView($('#vbox'), cachedItems(name), { more: () => fetchMore(name, 3), empty: 'Ничего не нашлось — проверьте написание имени.' });
+}
+function bindSearch(){
+  $('#sf').addEventListener('submit', e => { e.preventDefault(); const v = $('#si').value.trim(); query = v; LS.set('query', v); render(); });
+}
+
+/* ---- 2. pins ---- */
+function renderPins(m){
+  if (!pins.length) { m.innerHTML = `<div class="hero"><h1>Пока без пинов</h1><p>Нажимайте 📌 на снимках во вкладке «Поиск» — они соберутся здесь.</p></div>`; return; }
+  m.innerHTML = `<div class="rhead"><div class="l"><h2>Пины</h2><span class="sub">${pins.length} ${pl(pins.length, 'снимок', 'снимка', 'снимков')}</span></div>${modeSeg()}</div><div id="vbox"></div>`;
+  makeView($('#vbox'), pins.slice(), { more: null, empty: 'Пинов не осталось.' });
+}
+
+/* ---- mixed feed of several photographers ---- */
+function mixed(names){
+  const pools = names.map(n => shuffle(cachedItems(n))); const out = []; let i = 0;
+  while (pools.some(p => p.length)) { const p = pools[i % pools.length]; if (p.length) out.push(p.shift()); i++; }
+  return out;
+}
+function feedMore(names){
+  return async () => {
+    for (let tries = 0; tries < names.length; tries++) {
+      const next = names.filter(n => !cache(n).done && !running.has(slug(n))).sort((a, b) => cache(a).items.length - cache(b).items.length)[0];
+      if (!next) return null;
+      const fresh = await fetchMore(next, 2);
+      if (fresh === null) { if (!key()) return null; continue; }
+      if (fresh.length) return shuffle(fresh);
+    }
+    return null;
   };
-  watchEnd($('#st'), more);
-  if (!items.length) more();
-}
-function bindSearchForm(){
-  $('#sf').addEventListener('submit', e => { e.preventDefault(); const v = $('#si').value.trim(); if (!v) return; lastQuery = v; LS.set('lastQuery', v); render(); });
 }
 
-/* ---------- tab 2: my photographers + recommendations ---------- */
-function addArtist(name, desc){
-  name = name.trim(); if (!name || isMine(name)) return;
-  artists.unshift({ name, slug: slug(name), desc: desc || '', added: Date.now() });
-  LS.set('artists', artists);
-  toast(name + ' — в моих фотографах');
-  fetchMore(name, 8).then(() => { if (tab === 'mine') renderMine(); });  // start collecting their photos for the feed
-  loadRecs(name).then(() => { if (tab === 'mine') renderRecs(); });
+/* ---- 3. favorites ---- */
+function renderFavs(m){
+  if (!favs.length) { m.innerHTML = `<div class="hero"><h1>Избранных пока нет</h1><p>Найдите фотографа во вкладке «Поиск» и нажмите ☆ — его снимки появятся здесь общей лентой.</p></div>`; return; }
+  m.innerHTML = `<div class="rhead"><div class="l"><h2>Избранные</h2></div>${modeSeg()}</div>
+    <div class="chips" style="margin-bottom:16px">${favs.map(f => `<span class="chip"><span data-q="${esc(f.name)}">${esc(f.name)}</span><span class="x" data-unfav="${esc(f.name)}" title="Убрать из избранного">✕</span></span>`).join('')}</div>
+    <div id="vbox"></div>`;
+  if (!key()) { $('#vbox').innerHTML = keyPanel(); bindKey(); return; }
+  const names = favs.map(f => f.name);
+  makeView($('#vbox'), mixed(names), { more: feedMore(names), empty: 'Снимков пока нет.' });
 }
-function renderMine(){
-  const m = $('#main');
-  m.innerHTML = `<form class="bar" id="af"><input id="ai" placeholder="Добавить фотографа: имя и фамилия" autocomplete="off"><button class="btn primary">Добавить</button></form>
-    ${artists.length ? `<div class="agrid">${artists.map(a => { const it = visibleItems(a.slug, a.name).slice(0, 3);
-      return `<div class="acard"><div class="acover" data-view="${esc(a.name)}">${it.length ? it.map(x => `<img src="${esc(x.thumb || x.img)}" alt="" loading="lazy" referrerpolicy="no-referrer">`).join('') : (key() ? '<div class="ph">снимки подгружаются…</div>' : '<div class="ph">нажмите «Снимки»</div>')}</div>
-        <div class="abody"><b>${esc(a.name)}</b><div class="d">${esc(a.desc)}</div>
-        <div class="aact"><button class="btn" data-view="${esc(a.name)}">Снимки</button><button class="btn ghost" data-del="${esc(a.slug)}">Удалить</button></div></div></div>`; }).join('')}</div>`
-      : `<div class="hero" style="min-height:30vh"><h1 style="font-size:32px">Пока никого</h1><p>Добавьте фотографа по имени — я подберу похожих</p></div>`}
-    <div class="section"><h3>Похожие авторы</h3><span class="sub" id="recSub"></span></div>
-    <div class="agrid" id="recs"></div>`;
-  $('#af').addEventListener('submit', e => { e.preventDefault(); const v = $('#ai').value.trim(); if (v) { addArtist(v); renderMine(); } });
-  renderRecs();
-  artists.forEach(a => { if (!LS.get('r.' + a.slug, null)) loadRecs(a.name).then(() => { if (tab === 'mine') renderRecs(); }); });
+function toggleFav(name){
+  if (isFav(name)) { favs = favs.filter(f => slug(f.name) !== slug(name)); toast('Убрано из избранного'); }
+  else { favs.unshift({ name, added: Date.now() }); toast('★ ' + name + ' в избранном'); }
+  LS.set('favs', favs); LS.set('recDirty', true); counts();
 }
 
-/* recommendations from Wikidata: shared movement/genre, influences, teachers/students; fallback same country & generation */
+/* ---- 4. recommendations ---- */
 async function wd(url){ const r = await fetch(url, { headers: { 'Accept': 'application/sparql-results+json' } }); if (!r.ok) throw new Error(r.status); return r.json(); }
 async function findQ(name){
   const j = await wd('https://www.wikidata.org/w/api.php?action=wbsearchentities&format=json&origin=*&type=item&limit=8&language=en&uselang=ru&search=' + encodeURIComponent(name));
   const s = j.search || [];
-  const good = s.find(x => /photograph|фотограф|artist|художник|painter|sculptor/i.test(x.description || ''));
+  const good = s.find(x => /photograph|фотограф/i.test(x.description || '')) || s.find(x => /artist|художник|sculptor|скульптор|painter/i.test(x.description || ''));
   return (good || s[0] || {}).id || null;
 }
 const sparql = q => wd('https://query.wikidata.org/sparql?format=json&query=' + encodeURIComponent(q));
-async function loadRecs(name){
-  const s = slug(name); if (LS.get('r.' + s, null)) return;
+async function similarTo(name){
+  const k = 'r.' + slug(name); const c = LS.get(k, null); if (c) return c;
   try {
-    const Q = await findQ(name); if (!Q) { LS.set('r.' + s, []); return; }
-    const sel = `SELECT ?p (SAMPLE(?lab) AS ?name) (SAMPLE(?dru) AS ?ru) (SAMPLE(?den) AS ?en) (COUNT(DISTINCT ?k) AS ?score) (MAX(?sl) AS ?pop) WHERE {`;
+    const Q = await findQ(name); if (!Q) { LS.set(k, []); return []; }
+    const sel = `SELECT ?p (SAMPLE(?lab) AS ?name) (COUNT(DISTINCT ?k) AS ?score) (MAX(?sl) AS ?pop) WHERE {`;
     const tail = `?p wdt:P106 wd:Q33231 . FILTER(?p != wd:${Q}) ?p wikibase:sitelinks ?sl .
-      OPTIONAL { ?p rdfs:label ?lab . FILTER(LANG(?lab) = "en") }
-      OPTIONAL { ?p schema:description ?dru . FILTER(LANG(?dru) = "ru") }
-      OPTIONAL { ?p schema:description ?den . FILTER(LANG(?den) = "en") }
-    } GROUP BY ?p ORDER BY DESC(?score) DESC(?pop) LIMIT 40`;
+      OPTIONAL { ?p rdfs:label ?lab . FILTER(LANG(?lab) = "en") } } GROUP BY ?p ORDER BY DESC(?score) DESC(?pop) LIMIT 40`;
     const q1 = sel + `{ wd:${Q} wdt:P135 ?k . ?p wdt:P135 ?k . } UNION { wd:${Q} wdt:P136 ?k . ?p wdt:P136 ?k . }
       UNION { wd:${Q} wdt:P737 ?p . BIND("i1" AS ?k) } UNION { ?p wdt:P737 wd:${Q} . BIND("i2" AS ?k) }
       UNION { wd:${Q} wdt:P1066 ?p . BIND("s1" AS ?k) } UNION { ?p wdt:P1066 wd:${Q} . BIND("s2" AS ?k) } ` + tail;
-    let rows = (await sparql(q1)).results.bindings;
+    let rows = (await sparql(q1)).results.bindings.map(r => ({ r, w: 1 }));
     if (rows.length < 8) {
       const q2 = sel + `wd:${Q} wdt:P27 ?c ; wdt:P569 ?b . ?p wdt:P27 ?c ; wdt:P569 ?pb . FILTER(ABS(YEAR(?pb) - YEAR(?b)) <= 15) BIND("era" AS ?k) ` + tail;
-      rows = rows.concat((await sparql(q2)).results.bindings.map(r => ({ ...r, era: true })));
+      rows = rows.concat((await sparql(q2)).results.bindings.map(r => ({ r, w: 0.4 })));
     }
-    const out = []; const seen = new Set();
-    for (const r of rows) {
-      const n = r.name && r.name.value; if (!n || seen.has(n) || /^Q\d+$/.test(n)) continue; seen.add(n);
-      out.push({ name: n, desc: (r.ru || r.en || {}).value || '', score: r.era ? 0.5 : +(r.score ? r.score.value : 1), pop: +(r.pop ? r.pop.value : 0), from: name });
-    }
-    LS.set('r.' + s, out.slice(0, 30));
-  } catch (e) { console.warn('recs', e); }
+    const out = [], seen = new Set();
+    for (const { r, w } of rows) { const n = r.name && r.name.value; if (!n || seen.has(n)) continue; seen.add(n); out.push({ name: n, score: w * (+(r.score ? r.score.value : 1)), pop: +(r.pop ? r.pop.value : 0) }); }
+    LS.set(k, out.slice(0, 30)); return out;
+  } catch (e) { console.warn('wikidata', e); return []; }
 }
-function renderRecs(){
-  const box = $('#recs'); if (!box) return;
+async function computeRecs(){
+  const sig = new Map();
+  favs.forEach(f => sig.set(f.name, (sig.get(f.name) || 0) + 2));
+  pins.forEach(p => { if (!isFav(p.owner)) sig.set(p.owner, (sig.get(p.owner) || 0) + 1); });
   const dism = LS.get('dismissed', []);
   const merged = new Map();
-  for (const a of artists) for (const r of (LS.get('r.' + a.slug, []) || [])) {
-    if (isMine(r.name) || dism.includes(r.name)) continue;
-    const m = merged.get(r.name) || { ...r, total: 0, froms: [] };
-    m.total += r.score; if (!m.froms.includes(r.from)) m.froms.push(r.from); merged.set(r.name, m);
+  for (const [n, w] of [...sig.entries()].sort((a, b) => b[1] - a[1]).slice(0, 12)) {
+    for (const r of await similarTo(n)) {
+      if (isFav(r.name) || dism.includes(r.name) || slug(r.name) === slug(n)) continue;
+      const m = merged.get(r.name) || { name: r.name, score: 0, pop: r.pop, from: [] };
+      m.score += w * r.score; if (!m.from.includes(n)) m.from.push(n); merged.set(r.name, m);
+    }
   }
-  const list = [...merged.values()].sort((a, b) => (b.froms.length - a.froms.length) || (b.total - a.total) || (b.pop - a.pop)).slice(0, 16);
-  const loading = artists.some(a => !LS.get('r.' + a.slug, null));
-  $('#recSub').textContent = !artists.length ? 'появятся, когда добавите первого фотографа' : (loading && !list.length ? 'подбираю…' : 'по направлению, жанру и влияниям, из Wikidata');
-  box.innerHTML = list.map(r => `<div class="rcard"><b>${esc(r.name)}</b><div class="d">${esc(r.desc)}</div>
-      <div class="why">похож на ${esc(r.froms.join(', '))}</div>
-      <div class="aact"><button class="btn primary" data-addr="${esc(r.name)}" data-desc="${esc(r.desc)}">+ Добавить</button><button class="btn" data-view="${esc(r.name)}">Снимки</button><button class="btn ghost" data-no="${esc(r.name)}">✕</button></div></div>`).join('')
-    || (artists.length && !loading ? `<div class="sub">Похожих не нашлось — у этих авторов мало данных в Wikidata. Добавьте ещё кого-нибудь.</div>` : '');
+  const list = [...merged.values()].sort((a, b) => (b.from.length - a.from.length) || (b.score - a.score) || (b.pop - a.pop)).slice(0, 10);
+  LS.set('recList', list); LS.set('recDirty', false);
+  return list;
+}
+async function renderRecs(m){
+  if (!favs.length && !pins.length) { m.innerHTML = `<div class="hero"><h1>Подборка для вас</h1><p>Добавьте фотографов в избранное (☆) или запиньте снимки (📌) — и здесь появятся работы похожих авторов.</p></div>`; return; }
+  if (!key()) { m.innerHTML = keyPanel(); bindKey(); return; }
+  let list = LS.get('recList', null);
+  if (!list || LS.get('recDirty', true)) {
+    m.innerHTML = `<div class="status" style="padding:80px">Подбираю похожих авторов…</div>`;
+    list = await computeRecs();
+    if (tab !== 'recs') return;
+  }
+  if (!list.length) { m.innerHTML = `<div class="hero"><h1>Пока не из чего подобрать</h1><p>У выбранных авторов мало данных в открытой базе Wikidata. Добавьте в избранное ещё пару фотографов.</p></div>`; return; }
+  m.innerHTML = `<div class="rhead"><div class="l"><h2>Для вас</h2><button class="btn ghost" id="reRec">↻ Обновить подборку</button></div>${modeSeg()}</div>
+    <div class="chips" style="margin-bottom:16px">${list.map(r => `<span class="chip"><span class="s" data-fav="${esc(r.name)}" title="В избранное">☆</span><span data-q="${esc(r.name)}">${esc(r.name)}</span><em>похож на ${esc(r.from.slice(0, 2).join(', '))}</em><span class="x" data-dismiss="${esc(r.name)}" title="Не показывать">✕</span></span>`).join('')}</div>
+    <div id="vbox"></div>`;
+  $('#reRec').onclick = () => { LS.set('recDirty', true); render(); };
+  const names = list.map(r => r.name);
+  makeView($('#vbox'), mixed(names), { more: feedMore(names), empty: 'Снимков не нашлось.' });
 }
 
-/* ---------- tab 3: feed of everyone ---------- */
-let feedOrder = null;
-function renderFeed(){
-  const m = $('#main');
-  if (!artists.length) { m.innerHTML = `<div class="hero"><h1>Здесь будет общая лента</h1><p>Добавьте фотографов во вкладке «Мои фотографы» — их снимки появятся здесь вперемешку.</p><button class="btn primary" onclick="">Перейти</button></div>`; m.querySelector('.btn').onclick = () => setTab('mine'); return; }
-  if (!key()) { m.innerHTML = `<div class="hero"><h1>Лента снимков</h1><p>Чтобы снимки всех ваших фотографов показывались здесь общей лентой, нужен ключ поиска картинок.</p><button class="btn primary" id="gk">Добавить ключ</button></div>`; $('#gk').onclick = () => { showKey = true; render(); }; return; }
-  m.innerHTML = `<div class="rhead"><div><h2>Лента</h2><div class="sub">${artists.length} ${pl(artists.length, 'фотограф', 'фотографа', 'фотографов')} вперемешку</div></div><button class="btn" id="shuf">⤨ Перемешать</button></div>
-    <div class="masonry" id="grid"></div><div class="status" id="st"></div>`;
-  $('#shuf').onclick = () => { feedOrder = null; render(); };
-  // interleave all photographers' photos, shuffled within each
-  const pools = artists.map(a => shuffle(visibleItems(a.slug, a.name)));
-  const all = []; let i = 0; while (pools.some(p => p.length)) { const p = pools[i % pools.length]; if (p.length) all.push(p.shift()); i++; }
-  let shown = 0;
-  const chunk = async () => {
-    if (tab !== 'feed') return;
-    const grid = $('#grid'); if (!grid) return;
-    if (shown < all.length) { all.slice(shown, shown + 40).forEach(it => grid.appendChild(tile(it))); shown = Math.min(all.length, shown + 40); return; }
-    // ran out: fetch more for the photographer with the fewest photos
-    const next = artists.filter(a => !cache(a.slug).done && !running.has(a.slug)).sort((a, b) => cache(a.slug).items.length - cache(b.slug).items.length)[0];
-    if (!next) { $('#st').textContent = 'Вы долистали до конца. Добавьте ещё фотографов — лента станет длиннее.'; return; }
-    $('#st').textContent = 'Подгружаю ещё…';
-    const ok = await fetchMore(next.name, 2, fresh => { if (tab === 'feed' && $('#grid')) shuffle(fresh).forEach(it => { all.push(it); }); });
-    if ($('#st')) $('#st').textContent = '';
-    if (ok && tab === 'feed') chunk();
-  };
-  watchEnd($('#st'), chunk);
-  chunk();
-}
-function shuffle(a){ for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
-
-/* ================= lightbox ================= */
+/* ============ lightbox ============ */
 let lbI = 0;
-function openLb(id){ lbI = Math.max(0, current.findIndex(x => x.id === id)); $('#lb').hidden = false; document.body.style.overflow = 'hidden'; syncLb(); }
+function lbItems(){ return view ? view.items.filter(x => view.box.querySelector(`[data-id="${x.id}"]`)) : []; }
+function openLb(id){ const l = lbItems(); lbI = Math.max(0, l.findIndex(x => x.id === id)); $('#lb').hidden = false; document.body.style.overflow = 'hidden'; syncLb(); }
 function closeLb(){ $('#lb').hidden = true; document.body.style.overflow = ''; }
 function syncLb(){
-  const live = current.filter(x => document.querySelector(`.tile[data-id="${x.id}"]`));
-  if (!live.length) return closeLb(); lbI = (lbI + live.length) % live.length; const it = live[lbI];
-  const im = $('#lbImg'); im.onerror = () => { if (it.thumb && im.src !== it.thumb) im.src = it.thumb; }; im.src = it.img;
+  const l = lbItems(); if (!l.length) return closeLb(); lbI = (lbI + l.length) % l.length; const it = l[lbI];
+  const im = $('#lbImg'); im.onerror = () => { if (it.thumb && im.src !== it.thumb) im.src = it.thumb; }; if (im.src !== it.img) im.src = it.img;
   $('#lbT').innerHTML = `<b>${esc(it.owner)}</b><span>${esc(it.title)} · ${esc(it.domain)}</span>`;
-  $('#lbC').textContent = `${lbI + 1} / ${live.length}`; $('#lbSrc').href = it.link || it.img; $('#lbHide').dataset.id = it.id;
+  $('#lbC').textContent = `${lbI + 1} / ${l.length}`; $('#lbSrc').href = it.link || it.img;
+  const pb = $('#lbPin'); pb.dataset.pin = it.id; setPinBtn(pb, isPinned(it.id));
 }
 $('#lbX').onclick = closeLb; $('#lbP').onclick = () => { lbI--; syncLb(); }; $('#lbN').onclick = () => { lbI++; syncLb(); };
 $('#lbSt').onclick = e => { if (e.target.id === 'lbSt') closeLb(); };
-$('#lbHide').onclick = () => { hideItem($('#lbHide').dataset.id); syncLb(); };
-document.addEventListener('keydown', e => {
-  if ($('#lb').hidden) return;
-  if (e.key === 'Escape') closeLb(); if (e.key === 'ArrowRight') { lbI++; syncLb(); } if (e.key === 'ArrowLeft') { lbI--; syncLb(); }
-});
 
-/* ================= clicks ================= */
+/* ============ events ============ */
+document.addEventListener('keydown', e => {
+  if (document.activeElement && document.activeElement.tagName === 'INPUT') return;
+  if (!$('#lb').hidden) { if (e.key === 'Escape') closeLb(); if (e.key === 'ArrowRight') { lbI++; syncLb(); } if (e.key === 'ArrowLeft') { lbI--; syncLb(); } return; }
+  if (view && mode === 'cv') { if (e.key === 'ArrowRight') { e.preventDefault(); cvGo(view, view.idx + 1); } if (e.key === 'ArrowLeft') { e.preventDefault(); cvGo(view, view.idx - 1); } }
+});
 document.addEventListener('click', e => {
   const t = e.target;
-  const q = t.closest('[data-q]'); if (q) { lastQuery = q.dataset.q; LS.set('lastQuery', lastQuery); render(); return; }
-  const h = t.closest('[data-hide]'); if (h) { e.stopPropagation(); hideItem(h.dataset.hide); return; }
+  const pb = t.closest('[data-pin]'); if (pb) { e.stopPropagation(); togglePin(pb.dataset.pin); return; }
+  const md = t.closest('[data-mode]'); if (md) { mode = md.dataset.mode; LS.set('mode', mode); render(); return; }
+  const q = t.closest('[data-q]'); if (q) { query = q.dataset.q; LS.set('query', query); setTab('search'); return; }
+  const fv = t.closest('[data-fav]'); if (fv) { toggleFav(fv.dataset.fav); render(); return; }
+  const uf = t.closest('[data-unfav]'); if (uf) { toggleFav(uf.dataset.unfav); render(); return; }
+  const ds = t.closest('[data-dismiss]'); if (ds) { const d = LS.get('dismissed', []); d.push(ds.dataset.dismiss); LS.set('dismissed', d.slice(-500)); LS.set('recDirty', true); render(); return; }
+  const ar = t.closest('[data-cv]'); if (ar && view) { cvGo(view, view.idx + (+ar.dataset.cv)); return; }
   if (t.closest('.src')) return;
   const tl = t.closest('.tile'); if (tl) { openLb(tl.dataset.id); return; }
-  const ad = t.closest('[data-add]'); if (ad) { addArtist(ad.dataset.add); render(); return; }
-  const ar = t.closest('[data-addr]'); if (ar) { addArtist(ar.dataset.addr, ar.dataset.desc); renderMine(); return; }
-  const v = t.closest('[data-view]'); if (v) { lastQuery = v.dataset.view; LS.set('lastQuery', lastQuery); setTab('search'); return; }
-  const no = t.closest('[data-no]'); if (no) { const d = LS.get('dismissed', []); d.push(no.dataset.no); LS.set('dismissed', d.slice(-500)); renderRecs(); return; }
-  const del = t.closest('[data-del]'); if (del) { const a = artists.find(x => x.slug === del.dataset.del); if (a && confirm('Убрать «' + a.name + '» из моих фотографов?')) { artists = artists.filter(x => x !== a); LS.set('artists', artists); LS.del('r.' + a.slug); renderMine(); $('#cntMine').textContent = artists.length || ''; } return; }
+  const sl = t.closest('.slide'); if (sl && view) { const all = [...view.wrap.querySelectorAll('.slide')]; const i = all.indexOf(sl); if (i === view.idx) openLb(sl.dataset.id); else cvGo(view, i); return; }
 });
 
-/* first run: carry over the key from the earlier page if there was one */
-try { const old = localStorage.getItem('lupa.key'); if (!key() && old) LS.set('key', JSON.parse(old)); } catch {}
 render();
 })();
 </script>
