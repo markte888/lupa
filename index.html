@@ -375,7 +375,7 @@ function bindSearch(){
   inp.addEventListener('input', () => {
     clearTimeout(timer); const q = inp.value.trim();
     if (q.length < 2) { list = []; return close(); }
-    timer = setTimeout(async () => { const my = ++seq; const r = await suggest(q); if (my !== seq || document.activeElement !== inp) return; list = r; hi = -1; draw(); }, 250);
+    timer = setTimeout(async () => { const my = ++seq; const r = await suggest(q); if (my !== seq || inp.value.trim() !== q) return; list = r; hi = -1; draw(); }, 450);
   });
   inp.addEventListener('keydown', e => {
     if (box.hidden) return;
@@ -413,31 +413,27 @@ function closeness(q, name){
   const joined = Math.max(1 - lev(qj, nj) / Math.max(qj.length, nj.length), nj.length > qj.length ? (1 - lev(qj, nj.slice(0, qj.length)) / qj.length) * 0.9 : 0);
   return Math.max(sum / qt.length, joined);
 }
-const getJ = u => fetch(u).then(r => r.json()).catch(() => ({}));
+const getJ = u => fetch(u).then(r => r.ok ? r.json() : {}).catch(() => ({}));
 async function suggest(q){
   const k = q.toLowerCase(); if (sugCache.has(k)) return sugCache.get(k);
   const W = 'https://www.wikidata.org/w/api.php?format=json&origin=*&';
   const lat = norm(q);
   const toks = s => s.trim().split(/\s+/).filter(Boolean);
-  const fuzzy = s => toks(s).map(t => t.length > 2 ? t + '~' : t).join(' ');
-  const prefix = s => { const t = toks(s); if (!t.length) return ''; t[t.length - 1] += '*'; return t.join(' '); };
+  // one smart query: earlier words fuzzy (typos), last word as prefix while it's short, fuzzy once longer
+  const smart = s => toks(s).map((t, i, arr) => (i === arr.length - 1 && t.length < 5) ? t + '*' : (t.length > 2 ? t + '~' : t)).join(' ');
   const PH = ' haswbstatement:P106=Q33231';
-  const variants = [...new Set([q.trim(), lat])];
   const reqs = [
-    getJ(W + 'action=wbsearchentities&type=item&limit=10&language=en&uselang=ru&search=' + encodeURIComponent(q)),
-    getJ(W + 'action=wbsearchentities&type=item&limit=10&language=ru&uselang=ru&search=' + encodeURIComponent(q)),
-    ...variants.flatMap(v => [
-      getJ(W + 'action=query&list=search&srlimit=15&srsearch=' + encodeURIComponent(prefix(v) + PH)),
-      getJ(W + 'action=query&list=search&srlimit=15&srsearch=' + encodeURIComponent(fuzzy(v) + PH)),
-      getJ(W + 'action=query&list=search&srlimit=10&srsearch=' + encodeURIComponent(fuzzy(v)))
-    ])
+    getJ(W + 'action=wbsearchentities&type=item&limit=10&language=' + (/[а-яё]/i.test(q) ? 'ru' : 'en') + '&uselang=ru&search=' + encodeURIComponent(q)),
+    getJ(W + 'action=query&list=search&srlimit=15&srsearch=' + encodeURIComponent(smart(lat) + PH)),
+    getJ(W + 'action=query&list=search&srlimit=10&srsearch=' + encodeURIComponent(smart(lat)))
   ];
   const res = await Promise.all(reqs);
   const ids = new Map(); // id -> {photoHit}
   const note = (id, photoHit) => { if (!/^Q\d+$/.test(id)) return; const o = ids.get(id) || { photoHit: false }; o.photoHit = o.photoHit || photoHit; ids.set(id, o); };
-  (res[0].search || []).concat(res[1].search || []).forEach(s => note(s.id, false));
-  res.slice(2).forEach((r, i) => ((r.query && r.query.search) || []).forEach(s => note(s.title, i % 3 !== 2)));
-  if (!ids.size) { sugCache.set(k, []); return []; }
+  (res[0].search || []).forEach(s => note(s.id, false));
+  ((res[1].query && res[1].query.search) || []).forEach(s => note(s.title, true));
+  ((res[2].query && res[2].query.search) || []).forEach(s => note(s.title, false));
+  if (!ids.size) return [];
   const idList = [...ids.keys()].slice(0, 50);
   const ent = await getJ(W + 'action=wbgetentities&props=labels|descriptions&languages=en|ru|de|fr&languagefallback=1&ids=' + idList.join('|'));
   const out = [];
