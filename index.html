@@ -415,6 +415,9 @@ function closeness(q, name){
 }
 const getJ = u => fetch(u).then(r => r.ok ? r.json() : {}).catch(() => ({}));
 const swapComma = t => { const m = String(t).match(/^([^,()]+),\s*([^()]+)$/); return m ? (m[2].trim() + ' ' + m[1].trim()) : String(t).replace(/\s*\(.*?\)\s*$/, ''); };
+/* common Russian spellings of Western first names and particles */
+const NAME_EQ = { 'евген': 'eugene', 'евгений': 'eugene', 'юджин': 'eugene', 'ойген': 'eugen', 'эжен': 'eugene', 'фон': 'von', 'ван': 'van', 'дер': 'der', 'де': 'de', 'ди': 'di', 'дю': 'du', 'ле': 'le', 'ла': 'la', 'джон': 'john', 'жан': 'jean', 'пьер': 'pierre', 'анри': 'henri', 'ман': 'man', 'рэй': 'ray', 'майкл': 'michael', 'уильям': 'william', 'уилльям': 'william', 'роберт': 'robert', 'ричард': 'richard', 'стивен': 'stephen', 'джозеф': 'joseph', 'диана': 'diane', 'нан': 'nan', 'синди': 'cindy', 'вивиан': 'vivian', 'сол': 'saul', 'хельмут': 'helmut', 'ирвинг': 'irving', 'эдвард': 'edward', 'альфред': 'alfred', 'андре': 'andre', 'брассай': 'brassai', 'гарри': 'garry', 'ли': 'lee', 'сэлли': 'sally', 'франческа': 'francesca', 'дайдо': 'daido', 'ринко': 'rinko' };
+const latName = q => q.trim().split(/\s+/).map(w => NAME_EQ[w.toLowerCase()] || norm(w)).join(' ');
 async function suggest(q){
   const k = q.toLowerCase(); if (sugCache.has(k)) return sugCache.get(k);
   const cyr = /[а-яёіїєґ]/i.test(q);
@@ -428,7 +431,7 @@ async function suggest(q){
   const reqs = cyr ? [
     getJ(G('ru') + '15&gsrsearch=' + encodeURIComponent(loose(q))),
     getJ(G('ru') + '15&gsrsearch=' + encodeURIComponent(strict(q) + ' фотограф')),
-    getJ(G('en') + '15&gsrsearch=' + encodeURIComponent(loose(norm(q)) + ' photographer'))
+    getJ(G('en') + '20&gsrsearch=' + encodeURIComponent(strict(latName(q)) + ' photographer'))
   ] : [
     getJ(G('en') + '15&gsrsearch=' + encodeURIComponent(loose(q))),
     getJ(G('en') + '20&gsrsearch=' + encodeURIComponent(strict(q) + ' photographer')),
@@ -436,7 +439,8 @@ async function suggest(q){
   ];
   const res = await Promise.all(reqs);
   const out = [];
-  const consider = (title, enName, desc) => {
+  const tally = () => out.length;
+  const consider = (title, enName, desc, alt) => {
     if (!title || /\b(surname|disambiguation|list of|фамилия|значения)\b/i.test(title + ' ' + (desc || ''))) return;
     const shown = swapComma(enName || title);
     const local = swapComma(title);
@@ -445,13 +449,20 @@ async function suggest(q){
     const art = /artist|painter|sculptor|художни|скульптор|живопис/i.test(d);
     const person = photo || art || /\(\s*(born|b\.|род\.)?\s*\d{4}|\d{4}\s*[–-]\s*\d{4}|\bborn\b|родил/i.test(d) || /^[^,]+,\s*[^,]+$/.test(title);
     if (!person) return;
-    const sim = Math.max(closeness(q, shown), closeness(q, local));
+    const sim = Math.max(closeness(q, shown), closeness(q, local), cyr ? closeness(latName(q), shown) : 0, alt ? closeness(alt, shown) : 0);
     if (sim < 0.45) return;
     out.push({ name: shown, ru: local !== shown ? local : '', desc: d, photo, art, score: sim * 3 + (photo ? 1.2 : 0) + (art ? 0.4 : 0) });
   };
   for (const r of res) {
     if (r.query && r.query.pages) for (const pg of Object.values(r.query.pages)) consider(pg.title, pg.langlinks && pg.langlinks[0] && pg.langlinks[0]['*'], pg.description);
     if (r.search) for (const s of r.search) consider(s.label, s.label, s.description);
+  }
+  // typo fallback: Wikipedia's own "did you mean"
+  if (tally() < 3) {
+    const base = cyr ? latName(q) : q;
+    const sj = await getJ('https://en.wikipedia.org/w/api.php?format=json&origin=*&action=query&list=search&srlimit=1&srinfo=suggestion&srsearch=' + encodeURIComponent(base));
+    const sg = sj.query && sj.query.searchinfo && sj.query.searchinfo.suggestion;
+    if (sg) { const r2 = await getJ(G('en') + '15&gsrsearch=' + encodeURIComponent(sg)); if (r2.query && r2.query.pages) for (const pg of Object.values(r2.query.pages)) consider(pg.title, null, pg.description, sg); }
   }
   const seen = new Set();
   const ranked = out.sort((a, b) => b.score - a.score).filter(s => { const n = norm(s.name); if (seen.has(n)) return false; seen.add(n); return true; }).slice(0, 10);
