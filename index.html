@@ -138,7 +138,9 @@ const normUrl = u => String(u || '').toLowerCase().replace(/^https?:\/\/(www\.)?
 const cache = n => LS.get('c2.' + slug(n), null) || { items: [], step: 0, done: false };
 const saveCache = (n, d) => LS.set('c2.' + slug(n), d);
 const toObj = (a, owner) => ({ id: hashStr(a[0]), img: a[0], thumb: a[1], w: a[2], h: a[3], title: a[4], link: a[5], domain: a[6], owner });
-const cachedItems = n => cache(n).items.map(a => toObj(a, n));
+/* too small to enjoy: under ~600px on the long side or ~380px on the short side */
+const tooSmall = (w, h) => !!(w && h) && (Math.max(w, h) < 600 || Math.min(w, h) < 380);
+const cachedItems = n => cache(n).items.filter(a => !tooSmall(a[2], a[3])).map(a => toObj(a, n));
 const running = new Set();
 /* skip pictures OF the photographer (portraits, interviews, obituaries) — we want their work */
 function aboutPerson(x, name){
@@ -170,7 +172,7 @@ async function fetchMore(name, steps){
       const res = await serper(base + ' ' + TAILS[d.step]); d.step++;
       for (const x of res) {
         const img = x.imageUrl; if (!img || !/^https?:/.test(img)) continue;
-        if (aboutPerson(x, base)) continue;
+        if (aboutPerson(x, base) || tooSmall(x.imageWidth, x.imageHeight)) continue;
         const k = normUrl(img); if (seen.has(k) || (x.thumbnailUrl && seenT.has(x.thumbnailUrl))) continue;
         seen.add(k); if (x.thumbnailUrl) seenT.add(x.thumbnailUrl);
         const a = [img, x.thumbnailUrl || '', x.imageWidth || 0, x.imageHeight || 0, String(x.title || '').slice(0, 90), x.link || '', x.domain || x.source || ''];
@@ -263,7 +265,8 @@ function add(v, arr){
       v.wrap.insertBefore(el, v.endPad);
     }
     const im = el.querySelector('img');
-    im.onerror = () => { if (it.thumb && im.src !== it.thumb) { im.src = it.thumb; im.style.aspectRatio = ''; } else drop(v, it.id); };
+    im.onerror = () => drop(v, it.id);
+    im.addEventListener('load', () => { if (tooSmall(im.naturalWidth, im.naturalHeight)) drop(v, it.id); });
     dhash(it.thumb).then(h => { if (!h) return; for (const [id, o] of hashes) if (id !== it.id && ham(h, o) <= 2) { drop(v, it.id); return; } hashes.set(it.id, h); });
   }
   if (mode === 'cv') cvSync(v);
