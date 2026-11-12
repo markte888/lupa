@@ -76,14 +76,15 @@ main{padding:22px 24px 60px;max-width:1900px;margin:0 auto}
 /* lightbox */
 .lb{position:fixed;inset:0;z-index:50;background:rgba(8,8,8,.97);display:flex;flex-direction:column}
 .lb .st{flex:1;display:grid;place-items:center;padding:20px 70px 8px;min-height:0}
-.lb .st img{max-width:100%;max-height:100%;object-fit:contain}
+.lb .st{overflow:hidden}
+.lb .st img{display:block;width:auto;height:auto;max-width:calc(100vw - 150px);max-height:calc(100vh - 120px);max-height:calc(100dvh - 120px);object-fit:contain}
 .lb .nav{position:absolute;top:50%;transform:translateY(-50%);width:50px;height:50px;border-radius:50%;border:1px solid #333;background:rgba(20,20,20,.6);font-size:24px;cursor:pointer}
 .lb .pv{left:14px}.lb .nx{right:14px}.lb .cl{position:absolute;top:14px;right:14px}
 .lb .lbar{display:flex;gap:12px;align-items:center;padding:12px 22px 18px;flex-wrap:wrap}
 .lb .t{flex:1;min-width:200px}.lb .t b{display:block}.lb .t span{color:var(--muted);font-size:13px}
 .lb .pin{padding:9px 16px;background:#262626}.lb .pin.on{background:var(--acc)}
 .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:80;background:var(--text);color:#111;padding:10px 18px;border-radius:999px;font-weight:500;font-size:14px}
-@media(max-width:700px){.top{padding:10px 12px;gap:8px;flex-wrap:wrap}.tabs{order:3;flex-basis:100%}.tabs button{padding:7px 11px;font-size:14px}main{padding:14px 12px 60px}.masonry{columns:2;column-gap:8px}.tile{margin-bottom:8px;border-radius:10px}.cv{margin:0 -12px;gap:10px;height:calc(100vh - 330px)}.slide img{max-width:84vw}.lb .st{padding:10px}.ov{opacity:1!important;background:linear-gradient(transparent 60%,rgba(0,0,0,.7))!important}.ov .src{display:none}}
+@media(max-width:700px){.top{padding:10px 12px;gap:8px;flex-wrap:wrap}.tabs{order:3;flex-basis:100%}.tabs button{padding:7px 11px;font-size:14px}main{padding:14px 12px 60px}.masonry{columns:2;column-gap:8px}.tile{margin-bottom:8px;border-radius:10px}.cv{margin:0 -12px;gap:10px;height:calc(100vh - 330px)}.slide img{max-width:84vw}.lb .st{padding:10px}.lb .st img{max-width:calc(100vw - 20px);max-height:calc(100dvh - 170px)}.ov{opacity:1!important;background:linear-gradient(transparent 60%,rgba(0,0,0,.7))!important}.ov .src{display:none}}
 </style>
 </head>
 <body>
