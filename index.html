@@ -414,45 +414,46 @@ function closeness(q, name){
   return Math.max(sum / qt.length, joined);
 }
 const getJ = u => fetch(u).then(r => r.ok ? r.json() : {}).catch(() => ({}));
+const swapComma = t => { const m = String(t).match(/^([^,()]+),\s*([^()]+)$/); return m ? (m[2].trim() + ' ' + m[1].trim()) : String(t).replace(/\s*\(.*?\)\s*$/, ''); };
 async function suggest(q){
   const k = q.toLowerCase(); if (sugCache.has(k)) return sugCache.get(k);
-  const W = 'https://www.wikidata.org/w/api.php?format=json&origin=*&';
-  const lat = norm(q);
+  const cyr = /[а-яёіїєґ]/i.test(q);
   const toks = s => s.trim().split(/\s+/).filter(Boolean);
-  // one smart query: earlier words fuzzy (typos), last word as prefix while it's short, fuzzy once longer
-  const smart = s => toks(s).map((t, i, arr) => (i === arr.length - 1 && t.length < 5) ? t + '*' : (t.length > 2 ? t + '~' : t)).join(' ');
-  const PH = ' haswbstatement:P106=Q33231';
-  const reqs = [
-    getJ(W + 'action=wbsearchentities&type=item&limit=10&language=' + (/[а-яё]/i.test(q) ? 'ru' : 'en') + '&uselang=ru&search=' + encodeURIComponent(q)),
-    getJ(W + 'action=query&list=search&srlimit=15&srsearch=' + encodeURIComponent(smart(lat) + PH)),
-    getJ(W + 'action=query&list=search&srlimit=10&srsearch=' + encodeURIComponent(smart(lat)))
+  // any word may match (OR), with typo tolerance; the last word may still be unfinished
+  const loose = s => toks(s).map((t, i, a) => (i === a.length - 1 && t.length < 4) ? t + '*' : (t.length > 3 ? t + '~' : t)).join(' OR ');
+  const G = lang => `https://${lang}.wikipedia.org/w/api.php?format=json&origin=*&action=query&generator=search&prop=description${lang === 'ru' ? '|langlinks&lllang=en' : ''}&gsrlimit=`;
+  const reqs = cyr ? [
+    getJ(G('ru') + '15&gsrsearch=' + encodeURIComponent(loose(q))),
+    getJ(G('ru') + '10&gsrsearch=' + encodeURIComponent(q + ' фотограф')),
+    getJ(G('en') + '15&gsrsearch=' + encodeURIComponent(loose(norm(q)) + ' photographer'))
+  ] : [
+    getJ(G('en') + '15&gsrsearch=' + encodeURIComponent(loose(q))),
+    getJ(G('en') + '15&gsrsearch=' + encodeURIComponent(loose(q) + ' photographer')),
+    getJ('https://www.wikidata.org/w/api.php?format=json&origin=*&action=wbsearchentities&type=item&limit=10&language=en&uselang=ru&search=' + encodeURIComponent(q))
   ];
   const res = await Promise.all(reqs);
-  const ids = new Map(); // id -> {photoHit}
-  const note = (id, photoHit) => { if (!/^Q\d+$/.test(id)) return; const o = ids.get(id) || { photoHit: false }; o.photoHit = o.photoHit || photoHit; ids.set(id, o); };
-  (res[0].search || []).forEach(s => note(s.id, false));
-  ((res[1].query && res[1].query.search) || []).forEach(s => note(s.title, true));
-  ((res[2].query && res[2].query.search) || []).forEach(s => note(s.title, false));
-  if (!ids.size) return [];
-  const idList = [...ids.keys()].slice(0, 50);
-  const ent = await getJ(W + 'action=wbgetentities&props=labels|descriptions&languages=en|ru|de|fr&languagefallback=1&ids=' + idList.join('|'));
   const out = [];
-  for (const id of idList) {
-    const e = ent.entities && ent.entities[id]; if (!e) continue;
-    const L = e.labels || {}, D = e.descriptions || {};
-    const en = (L.en || L.de || L.fr || L.ru || {}).value; if (!en) continue;
-    const ru = (L.ru || {}).value || '';
-    const desc = (D.ru || D.en || {}).value || '';
-    const photo = ids.get(id).photoHit || /photograph|фотограф/i.test(desc);
-    const art = /artist|painter|sculptor|художни|скульптор|живопис/i.test(desc);
-    if (!photo && !art && !/(person|человек)/i.test(desc) && desc) { if (!/\d{4}/.test(desc)) continue; }
-    const sim = Math.max(closeness(q, en), ru ? closeness(q, ru) : 0);
-    if (sim < 0.45) continue;
-    out.push({ name: en, ru: ru && ru !== en ? ru : '', desc, photo, art, score: sim * 3 + (photo ? 1.2 : 0) + (art ? 0.4 : 0) });
+  const consider = (title, enName, desc) => {
+    if (!title || /\b(surname|disambiguation|list of|фамилия|значения)\b/i.test(title + ' ' + (desc || ''))) return;
+    const shown = swapComma(enName || title);
+    const local = swapComma(title);
+    const d = desc || '';
+    const photo = /photograph|фотограф/i.test(d);
+    const art = /artist|painter|sculptor|художни|скульптор|живопис/i.test(d);
+    const person = photo || art || /\(\s*(born|b\.|род\.)?\s*\d{4}|\d{4}\s*[–-]\s*\d{4}|\bborn\b|родил/i.test(d) || /^[^,]+,\s*[^,]+$/.test(title);
+    if (!person) return;
+    const sim = Math.max(closeness(q, shown), closeness(q, local));
+    if (sim < 0.45) return;
+    out.push({ name: shown, ru: local !== shown ? local : '', desc: d, photo, art, score: sim * 3 + (photo ? 1.2 : 0) + (art ? 0.4 : 0) });
+  };
+  for (const r of res) {
+    if (r.query && r.query.pages) for (const pg of Object.values(r.query.pages)) consider(pg.title, pg.langlinks && pg.langlinks[0] && pg.langlinks[0]['*'], pg.description);
+    if (r.search) for (const s of r.search) consider(s.label, s.label, s.description);
   }
   const seen = new Set();
-  const ranked = out.sort((a, b) => b.score - a.score).filter(s => { const n = s.name.toLowerCase(); if (seen.has(n)) return false; seen.add(n); return true; }).slice(0, 10);
-  sugCache.set(k, ranked); return ranked;
+  const ranked = out.sort((a, b) => b.score - a.score).filter(s => { const n = norm(s.name); if (seen.has(n)) return false; seen.add(n); return true; }).slice(0, 10);
+  if (ranked.length) sugCache.set(k, ranked);
+  return ranked;
 }
 
 /* ---- 2. pins ---- */
