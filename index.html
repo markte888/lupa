@@ -528,7 +528,9 @@ function pickName(pool, recent){
 }
 async function discMore(){
   if (!key()) return null;
-  const pool = await discPool(); if (!pool.length) return null;
+  // the big list from Wikidata loads in the background (~30 s the first time); meanwhile use the built-in list
+  const c = LS.get('discPool', null);
+  const pool = (c && c.list && c.list.length) ? await discPool() : SEED.map(n => ({ n, d: '', s: 30 }));
   const recent = LS.get('discRecent', []);
   for (let tries = 0; tries < 4; tries++) {
     const name = pickName(pool, recent);
