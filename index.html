@@ -92,6 +92,7 @@ main{padding:22px 24px 60px;max-width:1900px;margin:0 auto}
   <div class="logo">Лупа<i>.</i></div>
   <nav class="tabs" id="tabs">
     <button data-t="search">Поиск</button>
+    <button data-t="disc">Открытия</button>
     <button data-t="favs">Избранные<small id="nFavs"></small></button>
     <button data-t="pins">Пины<small id="nPins"></small></button>
   </nav>
@@ -123,7 +124,7 @@ const pl = (n, a, b, c) => { const m = n % 10, h = n % 100; return m === 1 && h 
 
 /* ============ state ============ */
 let tab = LS.get('tab', 'search');
-let mode = LS.get('mode', 'cv');                 // 'cv' carousel | 'grid'
+const mode = 'cv';                               // carousel only
 let query = LS.get('query', '');
 let favs = LS.get('favs', []);                   // [{name, added}]
 let pins = LS.get('pins', []);                   // [{id,img,thumb,w,h,title,link,domain,owner}]
@@ -217,7 +218,7 @@ function makeView(box, initial, opts){
     v.wrap = box.querySelector('.masonry');
   } else {
     box.innerHTML = `<div class="cv"><div class="pad"></div><div class="pad"></div></div>
-      <div class="cvbar"><button class="arrow" data-cv="-1">‹</button><button class="arrow" data-cv="1">›</button><span class="sub cn"></span><span class="cap"></span><button class="pin" data-pinactive="1">📌 Пин</button></div><div class="status"></div>`;
+      <div class="cvbar"><button class="arrow" data-cv="-1">‹</button><button class="arrow" data-cv="1">›</button><span class="sub cn"></span><span class="cap"></span><button class="btn star" data-fav="">☆ В избранное</button><button class="btn ghost" data-q="">Все работы →</button><button class="pin" data-pinactive="1">📌 Пин</button></div><div class="status"></div>`;
     v.wrap = box.querySelector('.cv'); v.endPad = v.wrap.lastElementChild;
     let raf; v.wrap.addEventListener('scroll', () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => cvSync(v)); }, { passive: true });
   }
@@ -304,7 +305,10 @@ function cvSync(v){
   if (!v.restoring) remember(v);
   const it = v.items.find(x => x.id === sl[best].dataset.id); if (!it) return;
   bar.querySelector('.cn').textContent = `${best + 1} / ${sl.length}`;
-  bar.querySelector('.cap').innerHTML = `<b>${esc(it.owner)}</b> · ${esc(it.title)} · <a href="${esc(it.link || it.img)}" target="_blank" rel="noopener">${esc(it.domain)} ↗</a>`;
+  const who = DESC[it.owner] ? ` <span class="sub">${esc(DESC[it.owner])}</span>` : '';
+  bar.querySelector('.cap').innerHTML = `<b>${esc(it.owner)}</b>${who} · <a href="${esc(it.link || it.img)}" target="_blank" rel="noopener">${esc(it.domain)} ↗</a>`;
+  const st = bar.querySelector('[data-fav]'); st.dataset.fav = it.owner; const f = isFav(it.owner); st.classList.toggle('on', f); st.textContent = f ? '★ В избранном' : '☆ В избранное';
+  const aw = bar.querySelector('[data-q]'); aw.dataset.q = it.owner; aw.hidden = tab === 'search';
   const pb = bar.querySelector('.pin'); pb.hidden = false; pb.dataset.pin = it.id; setPinBtn(pb, isPinned(it.id));
   if (sl.length - best < 6) more(v);
 }
@@ -327,7 +331,7 @@ function togglePin(id){
 function counts(){ $('#nPins').textContent = pins.length || ''; $('#nFavs').textContent = favs.length || ''; }
 function setTab(t){ tab = t; LS.set('tab', t); render(); window.scrollTo(0, 0); }
 $('#tabs').addEventListener('click', e => { const b = e.target.closest('[data-t]'); if (b) setTab(b.dataset.t); });
-const modeSeg = () => `<div class="seg"><button data-mode="cv" class="${mode === 'cv' ? 'on' : ''}">Карусель</button><button data-mode="grid" class="${mode === 'grid' ? 'on' : ''}">Сетка</button></div>`;
+const modeSeg = () => '';
 let showKey = false;
 $('#keyBtn').onclick = () => { showKey = true; render(); };
 
@@ -353,6 +357,7 @@ function render(){
   if (showKey) { m.innerHTML = keyPanel(); bindKey(); return; }
   if (tab === 'search') renderSearch(m);
   else if (tab === 'pins') renderPins(m);
+  else if (tab === 'disc') renderDisc(m);
   else if (tab === 'favs') renderFavs(m);
   else { tab = 'search'; renderSearch(m); }
 }
@@ -484,6 +489,67 @@ async function suggest(q){
   return ranked;
 }
 
+/* ---- 2. discovery: endless carousel of all kinds of photographers ---- */
+const DESC = {};
+const SEED = ['Saul Leiter','Vivian Maier','Rinko Kawauchi','Francesca Woodman','Daido Moriyama','Ralph Eugene Meatyard','Eugene Von Bruenchenhein','Morton Bartlett','Diane Arbus','Sally Mann','Nan Goldin','William Eggleston','Stephen Shore','Joel Meyerowitz','Fan Ho','Masahisa Fukase','Shomei Tomatsu','Nobuyoshi Araki','Hiroshi Sugimoto','Michael Kenna','Sarah Moon','Paolo Roversi','Deborah Turbeville','Guy Bourdin','Lillian Bassman','Ernst Haas','Harry Gruyaert','Alex Webb','Trent Parke','Josef Koudelka','Sergio Larrain','Graciela Iturbide','Manuel Álvarez Bravo','Flor Garduño','Seydou Keïta','Malick Sidibé','J.D. Okhai Ojeikere','Zanele Muholi','Roy DeCarava','Gordon Parks','Dawoud Bey','LaToya Ruby Frazier','Carrie Mae Weems','Alec Soth','Todd Hido','Gregory Crewdson','Larry Sultan','Mike Brodie','Ryan McGinley','Wolfgang Tillmans','Juergen Teller','Viviane Sassen','Rineke Dijkstra','Bernd and Hilla Becher','Andreas Gursky','Thomas Struth','Candida Höfer','August Sander','Karl Blossfeldt','Albert Renger-Patzsch','László Moholy-Nagy','Alexander Rodchenko','Boris Mikhailov','Sergey Prokudin-Gorsky','Antanas Sutkus','Vitas Luckus','Jan Saudek','Josef Sudek','František Drtikol','Brassaï','André Kertész','Henri Cartier-Bresson','Robert Doisneau','Willy Ronis','Jacques Henri Lartigue','Eugène Atget','Man Ray','Lee Miller','Dora Maar','Claude Cahun','Hans Bellmer','Florence Henri','Ilse Bing','Germaine Krull','Berenice Abbott','Lisette Model','Helen Levitt','Weegee','Garry Winogrand','Lee Friedlander','Robert Frank','William Klein','Bruce Davidson','Mary Ellen Mark','Danny Lyon','Larry Clark','Ed van der Elsken','Anders Petersen','JH Engström','Christer Strömholm','Miroslav Tichý','Masao Yamamoto','Eikoh Hosoe','Issei Suda','Mikiko Hara','Kohei Yoshiyuki','Takuma Nakahira','Ishiuchi Miyako','Lieko Shiga','Rinko Kawauchi','Hiroshi Hamaya','Shoji Ueda','Ren Hang','Chen Man','Raghubir Singh','Dayanita Singh','Abbas Kiarostami','Shirin Neshat','Duane Michals','Arthur Tress','Ralph Gibson','Aaron Siskind','Harry Callahan','Minor White','Edward Weston','Paul Strand','Imogen Cunningham','Julia Margaret Cameron','Clementina Hawarden','Anna Atkins','Edward Steichen','Alfred Stieglitz','Irving Penn','Richard Avedon','Peter Lindbergh','Helmut Newton','Herb Ritts','Robert Mapplethorpe','Peter Hujar','David Wojnarowicz','Cindy Sherman','Francesca Woodman','Hannah Starkey','Tim Walker','Erwin Blumenfeld','Horst P. Horst','Cecil Beaton','Bill Brandt','Martin Parr','Tony Ray-Jones','Chris Killip','Fay Godwin','Don McCullin','Sebastião Salgado','James Nachtwey','Steve McCurry','Ansel Adams','Edward Burtynsky','Michael Wolf','Todd Hido','Saul Leiter','Joel Sternfeld','Mitch Epstein','Jeff Wall','Philip-Lorca diCorcia','Nadav Kander','Jacob Aue Sobol','Antoine d\'Agata','Pentti Sammallahti','Jacques Henri Lartigue','Kati Horna','Gerda Taro','Robert Capa','Bill Henson','Petrina Hicks','Carolle Benitez','Mohamed Bourouissa','Txema Salvans','Cristina García Rodero','Ramón Masats','Gabriele Basilico','Luigi Ghirri','Franco Fontana','Mario Giacomelli','Letizia Battaglia','Ferdinando Scianna'];
+let poolLoading = null;
+async function discPool(){
+  const c = LS.get('discPool', null);
+  if (c && c.list && c.list.length && Date.now() - c.at < 14 * 864e5) { c.list.forEach(x => { if (x.d) DESC[x.n] = x.d; }); return c.list; }
+  if (poolLoading) return poolLoading;
+  poolLoading = (async () => {
+    let list = [];
+    try {
+      const q = `SELECT ?name ?desc ?sl WHERE { ?p wdt:P106 wd:Q33231 ; wikibase:sitelinks ?sl . FILTER(?sl >= 8)
+        ?p rdfs:label ?name . FILTER(LANG(?name) = "en")
+        OPTIONAL { ?p schema:description ?desc . FILTER(LANG(?desc) = "ru") } } LIMIT 9000`;
+      const j = await fetch('https://query.wikidata.org/sparql?format=json&query=' + encodeURIComponent(q), { headers: { Accept: 'application/sparql-results+json' } }).then(r => r.json());
+      const seen = new Set();
+      for (const b of j.results.bindings) { const n = b.name.value; if (seen.has(n) || /^Q\d+$/.test(n)) continue; seen.add(n); list.push({ n, d: b.desc ? b.desc.value : '', s: +b.sl.value }); }
+    } catch (e) { console.warn('pool', e); }
+    const have = new Set(list.map(x => x.n));
+    SEED.forEach(n => { if (!have.has(n)) list.push({ n, d: '', s: 30 }); });
+    if (list.length > SEED.length) LS.set('discPool', { at: Date.now(), list });
+    list.forEach(x => { if (x.d) DESC[x.n] = x.d; });
+    poolLoading = null;
+    return list;
+  })();
+  return poolLoading;
+}
+/* pick a photographer: half the time a better-known one, half the time anyone — for real discovery */
+function pickName(pool, recent){
+  for (let i = 0; i < 30; i++) {
+    const famous = Math.random() < 0.5;
+    const cand = famous ? pool.filter(x => x.s >= 25) : pool;
+    const x = cand[Math.floor(Math.random() * cand.length)];
+    if (x && !recent.includes(x.n)) return x.n;
+  }
+  return pool[Math.floor(Math.random() * pool.length)].n;
+}
+async function discMore(){
+  if (!key()) return null;
+  const pool = await discPool(); if (!pool.length) return null;
+  const recent = LS.get('discRecent', []);
+  for (let tries = 0; tries < 4; tries++) {
+    const name = pickName(pool, recent);
+    recent.push(name); LS.set('discRecent', recent.slice(-150));
+    let items = cachedItems(name);
+    if (items.length < 3) { await fetchMore(name, 1); items = cachedItems(name); }
+    if (!items.length) continue;
+    const chosen = shuffle(items.slice()).slice(0, 3);
+    const saved = LS.get('discItems', []); LS.set('discItems', saved.concat(chosen).slice(-300));
+    return chosen;
+  }
+  return null;
+}
+function renderDisc(m){
+  m.innerHTML = `<div class="rhead"><div class="l"><h2>Открытия</h2><span class="sub">самые разные фотографы — листайте, ☆ добавляет в избранное</span></div><button class="btn ghost" id="discNew">↻ Начать заново</button></div><div id="vbox"></div>`;
+  $('#discNew').onclick = () => { LS.set('discItems', []); LS.set('view.disc', null); render(); };
+  if (!key()) { $('#vbox').innerHTML = keyPanel(); bindKey(); return; }
+  discPool();
+  makeView($('#vbox'), LS.get('discItems', []), { key: 'disc', more: discMore, empty: 'Не удалось загрузить — попробуйте «Начать заново».' });
+}
+
 /* ---- 2. pins ---- */
 function renderPins(m){
   if (!pins.length) { m.innerHTML = `<div class="hero"><h1>Пока без пинов</h1><p>Нажимайте 📌 на снимках во вкладке «Поиск» — они соберутся здесь.</p></div>`; return; }
@@ -550,9 +616,8 @@ document.addEventListener('keydown', e => {
 document.addEventListener('click', e => {
   const t = e.target;
   const pb = t.closest('[data-pin]'); if (pb) { e.stopPropagation(); togglePin(pb.dataset.pin); return; }
-  const md = t.closest('[data-mode]'); if (md) { mode = md.dataset.mode; LS.set('mode', mode); render(); return; }
-  const q = t.closest('[data-q]'); if (q) { query = q.dataset.q; LS.set('query', query); setTab('search'); return; }
-  const fv = t.closest('[data-fav]'); if (fv) { toggleFav(fv.dataset.fav); render(); return; }
+  const q = t.closest('[data-q]'); if (q && q.dataset.q) { query = q.dataset.q; LS.set('query', query); setTab('search'); return; }
+  const fv = t.closest('[data-fav]'); if (fv) { if (!fv.dataset.fav) return; toggleFav(fv.dataset.fav); if (fv.closest('.cvbar')) { if (view) cvSync(view); } else render(); return; }
   const uf = t.closest('[data-unfav]'); if (uf) { toggleFav(uf.dataset.unfav); render(); return; }
   const ar = t.closest('[data-cv]'); if (ar && view) { cvGo(view, view.idx + (+ar.dataset.cv)); return; }
   if (t.closest('.src')) return;
