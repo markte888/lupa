@@ -189,8 +189,12 @@ let view = null;
 function makeView(box, initial, opts){
   if (view && view.io) view.io.disconnect();
   hashes = new Map();
-  const v = { box, items: [], opts, done: false, loading: false, idx: 0 };
+  const v = { box, items: [], opts, done: false, loading: false, idx: 0, key: opts.key, memo: opts.key ? LS.get('view.' + opts.key, null) : null };
   view = v;
+  if (v.memo && Array.isArray(v.memo.ids)) {
+    const order = new Map(v.memo.ids.map((id, i) => [id, i]));
+    initial = initial.slice().sort((a, b) => (order.has(a.id) ? order.get(a.id) : 1e9) - (order.has(b.id) ? order.get(b.id) : 1e9));
+  }
   if (mode === 'grid') {
     box.innerHTML = `<div class="masonry"></div><div class="status"></div>`;
     v.wrap = box.querySelector('.masonry');
@@ -205,7 +209,19 @@ function makeView(box, initial, opts){
   if (mode === 'grid') {
     v.io = new IntersectionObserver(es => { if (es[0].isIntersecting) more(v); }, { rootMargin: '1400px' });
     v.io.observe(v.st);
-  } else requestAnimationFrame(() => cvSync(v));
+  }
+  v.restoring = true;
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    const at = v.memo && v.memo.at;
+    if (mode === 'cv') {
+      const sl = [...v.wrap.querySelectorAll('.slide')]; const i = at ? sl.findIndex(s => s.dataset.id === at) : -1;
+      if (i > 0) { const s = sl[i]; v.wrap.scrollLeft = s.offsetLeft + s.offsetWidth / 2 - v.wrap.clientWidth / 2; }
+      v.restoring = false; cvSync(v);
+    } else {
+      if (v.memo && v.memo.y) window.scrollTo(0, v.memo.y);
+      v.restoring = false;
+    }
+  }));
   if (!v.items.length) more(v); else status(v, '');
   return v;
 }
@@ -233,6 +249,15 @@ function add(v, arr){
     dhash(it.thumb).then(h => { if (!h) return; for (const [id, o] of hashes) if (id !== it.id && ham(h, o) <= 2) { drop(v, it.id); return; } hashes.set(it.id, h); });
   }
   if (mode === 'cv') cvSync(v);
+  remember(v);
+}
+function remember(v){
+  if (!v.key || v.restoring || v !== view) return;
+  const m = LS.get('view.' + v.key, {}) || {};
+  m.ids = v.items.map(x => x.id).slice(0, 2000);
+  if (mode === 'cv') { const sl = v.wrap.querySelectorAll('.slide')[v.idx]; if (sl) m.at = sl.dataset.id; }
+  else m.y = window.scrollY;
+  LS.set('view.' + v.key, m);
 }
 function drop(v, id){
   const el = v.box.querySelector(`[data-id="${id}"]`); if (el) el.remove();
@@ -259,6 +284,7 @@ function cvSync(v){
   sl.forEach((s, i) => { const d = Math.abs(s.offsetLeft + s.offsetWidth / 2 - mid); if (d < bd) { bd = d; best = i; } });
   sl.forEach((s, i) => s.classList.toggle('on', i === best));
   v.idx = best;
+  if (!v.restoring) remember(v);
   const it = v.items.find(x => x.id === sl[best].dataset.id); if (!it) return;
   bar.querySelector('.cn').textContent = `${best + 1} / ${sl.length}`;
   bar.querySelector('.cap').innerHTML = `<b>${esc(it.owner)}</b> · ${esc(it.title)} · <a href="${esc(it.link || it.img)}" target="_blank" rel="noopener">${esc(it.domain)} ↗</a>`;
@@ -329,7 +355,7 @@ function renderSearch(m){
     <div id="vbox"></div>`;
   bindSearch();
   if (!key()) { $('#vbox').innerHTML = keyPanel(); bindKey(); return; }
-  makeView($('#vbox'), cachedItems(name), { more: () => fetchMore(name, 3), empty: 'Ничего не нашлось — проверьте написание имени.' });
+  makeView($('#vbox'), cachedItems(name), { key: 'search:' + slug(name), more: () => fetchMore(name, 3), empty: 'Ничего не нашлось — проверьте написание имени.' });
 }
 function bindSearch(){
   $('#sf').addEventListener('submit', e => { e.preventDefault(); const v = $('#si').value.trim(); query = v; LS.set('query', v); render(); });
@@ -339,7 +365,7 @@ function bindSearch(){
 function renderPins(m){
   if (!pins.length) { m.innerHTML = `<div class="hero"><h1>Пока без пинов</h1><p>Нажимайте 📌 на снимках во вкладке «Поиск» — они соберутся здесь.</p></div>`; return; }
   m.innerHTML = `<div class="rhead"><div class="l"><h2>Пины</h2><span class="sub">${pins.length} ${pl(pins.length, 'снимок', 'снимка', 'снимков')}</span></div>${modeSeg()}</div><div id="vbox"></div>`;
-  makeView($('#vbox'), pins.slice(), { more: null, empty: 'Пинов не осталось.' });
+  makeView($('#vbox'), pins.slice(), { key: 'pins', more: null, empty: 'Пинов не осталось.' });
 }
 
 /* ---- mixed feed of several photographers ---- */
@@ -369,7 +395,7 @@ function renderFavs(m){
     <div id="vbox"></div>`;
   if (!key()) { $('#vbox').innerHTML = keyPanel(); bindKey(); return; }
   const names = favs.map(f => f.name);
-  makeView($('#vbox'), mixed(names), { more: feedMore(names), empty: 'Снимков пока нет.' });
+  makeView($('#vbox'), mixed(names), { key: 'favs', more: feedMore(names), empty: 'Снимков пока нет.' });
 }
 function toggleFav(name){
   if (isFav(name)) { favs = favs.filter(f => slug(f.name) !== slug(name)); toast('Убрано из избранного'); }
@@ -438,8 +464,11 @@ async function renderRecs(m){
     <div id="vbox"></div>`;
   $('#reRec').onclick = () => { LS.set('recDirty', true); render(); };
   const names = list.map(r => r.name);
-  makeView($('#vbox'), mixed(names), { more: feedMore(names), empty: 'Снимков не нашлось.' });
+  makeView($('#vbox'), mixed(names), { key: 'recs', more: feedMore(names), empty: 'Снимков не нашлось.' });
 }
+
+let scrollT;
+window.addEventListener('scroll', () => { clearTimeout(scrollT); scrollT = setTimeout(() => { if (view && mode === 'grid') remember(view); }, 200); }, { passive: true });
 
 /* ============ lightbox ============ */
 let lbI = 0;
