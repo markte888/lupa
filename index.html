@@ -128,6 +128,8 @@ const visibleItems = (s, owner) => { const d = cache(s); return d.items.filter(a
 const TAILS = ['photograph', '', 'photography', 'photo', 'photographs', 'untitled', 'print', 'gelatin silver print', 'chromogenic print', 'vintage print', 'exhibition', 'museum', 'gallery', 'collection', 'book', 'archive', 'artwork', 'art', 'works', 'black and white', 'color photograph', 'portrait', 'series', 'auction', 'retrospective', 'фото', 'Fotografie', 'photographie', 'fotografia', '1930s', '1950s', '1970s'];
 const normUrl = u => String(u || '').toLowerCase().replace(/^https?:\/\/(www\.)?/, '').replace(/[?#].*$/, '').replace(/(-\d+x\d+|_\d+x\d+|-scaled|@2x)(?=\.\w+$)/, '');
 const running = new Set();
+const gImg = n => 'https://www.google.com/search?tbm=isch&q=' + encodeURIComponent(n + ' photography');
+const pinS = n => 'https://www.pinterest.com/search/pins/?q=' + encodeURIComponent(n + ' photography');
 
 async function serper(q){
   const r = await fetch('https://google.serper.dev/images', { method: 'POST', headers: { 'X-API-KEY': key(), 'Content-Type': 'application/json' }, body: JSON.stringify({ q, safe: 'active' }) });
@@ -215,7 +217,7 @@ function render(){
   document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === tab));
   $('#cntMine').textContent = artists.length ? artists.length : '';
   current = []; hashes.clear(); if (io) io.disconnect();
-  if (!key()) { renderKey(); return; }
+  if (showKey) { renderKey(); return; }
   if (tab === 'search') renderSearch();
   else if (tab === 'mine') renderMine();
   else renderFeed();
@@ -223,16 +225,19 @@ function render(){
 }
 function setTab(t){ tab = t; LS.set('tab', t); render(); }
 $('#tabs').addEventListener('click', e => { const b = e.target.closest('[data-t]'); if (b) setTab(b.dataset.t); });
-$('#keyBtn').onclick = () => { if (confirm('Ввести другой ключ поиска?')) { LS.set('key', ''); render(); } };
+let showKey = false;
+$('#keyBtn').onclick = () => { showKey = true; render(); };
 
 function renderKey(){
-  $('#main').innerHTML = `<div class="empty"><h2>Один раз: ключ поиска картинок</h2>
-    <div class="sub">Снимки берутся из Google Картинок через сервис Serper. Новым пользователям он даёт бесплатные запросы.</div>
+  $('#main').innerHTML = `<div class="empty"><h2>Снимки прямо на сайте (по желанию)</h2>
+    <div class="sub">Без ключа сайт работает полностью: снимки открываются в Google Картинках и Pinterest. С ключом сервиса Serper они показываются прямо здесь, сеткой. Новым пользователям Serper даёт бесплатные запросы.</div>
     <ol><li>Зарегистрируйтесь на <a href="https://serper.dev" target="_blank" rel="noopener">serper.dev</a>.</li>
     <li>Откройте <a href="https://serper.dev/api-key" target="_blank" rel="noopener">API Key</a> и скопируйте ключ.</li>
     <li>Вставьте сюда — он хранится только в этом браузере.</li></ol>
-    <input id="keyIn" placeholder="Вставьте ключ" autocomplete="off"><button class="btn primary" id="keySave">Сохранить</button></div>`;
-  $('#keySave').onclick = () => { const v = $('#keyIn').value.trim(); if (v) { LS.set('key', v); render(); } };
+    <input id="keyIn" placeholder="Вставьте ключ (или оставьте пустым)" autocomplete="off"><button class="btn primary" id="keySave">Сохранить</button> <button class="btn ghost" id="keyBack">Назад</button></div>`;
+  $('#keyIn').value = key();
+  $('#keySave').onclick = () => { const v = $('#keyIn').value.trim(); LS.set('key', v); showKey = false; render(); };
+  $('#keyBack').onclick = () => { showKey = false; render(); };
 }
 
 /* ---------- tab 1: search ---------- */
@@ -245,10 +250,17 @@ function renderSearch(){
     bindSearchForm(); return;
   }
   const name = lastQuery, s = slug(name), mine = isMine(name);
+  const ext = `<div class="hint" style="justify-content:flex-start;margin-bottom:18px"><a class="btn" href="${esc(gImg(name))}" target="_blank" rel="noopener">Google Картинки ↗</a><a class="btn" href="${esc(pinS(name))}" target="_blank" rel="noopener">Pinterest ↗</a></div>`;
+  if (!key()) {
+    m.innerHTML = `<form class="bar" id="sf"><input id="si" value="${esc(name)}" autocomplete="off"><button class="btn primary">Найти</button></form>
+      <div class="rhead"><div><h2>${esc(name)}</h2></div>${mine ? `<span class="sub">✓ В моих фотографах</span>` : `<button class="btn primary" data-add="${esc(name)}">+ Добавить в мои фотографы</button>`}</div>
+      <div class="empty" style="margin:20px 0;max-width:none"><h2>Смотреть снимки</h2><div class="sub" style="margin-bottom:16px">Откроются в новой вкладке. Чтобы снимки показывались прямо здесь, добавьте ключ поиска — кнопка ⚙︎ вверху.</div>${ext}</div>`;
+    bindSearchForm(); return;
+  }
   m.innerHTML = `<form class="bar" id="sf"><input id="si" value="${esc(name)}" autocomplete="off"><button class="btn primary">Найти</button></form>
     <div class="rhead"><div><h2>${esc(name)}</h2><div class="sub" id="cnt"></div></div>
       ${mine ? `<span class="sub">✓ В моих фотографах</span>` : `<button class="btn primary" data-add="${esc(name)}">+ Добавить в мои фотографы</button>`}</div>
-    <div class="masonry" id="grid"></div><div class="status" id="st"></div>`;
+    ${ext}<div class="masonry" id="grid"></div><div class="status" id="st"></div>`;
   bindSearchForm();
   const grid = $('#grid'); const items = visibleItems(s, name);
   items.forEach(it => grid.appendChild(tile(it)));
@@ -284,7 +296,7 @@ function renderMine(){
   const m = $('#main');
   m.innerHTML = `<form class="bar" id="af"><input id="ai" placeholder="Добавить фотографа: имя и фамилия" autocomplete="off"><button class="btn primary">Добавить</button></form>
     ${artists.length ? `<div class="agrid">${artists.map(a => { const it = visibleItems(a.slug, a.name).slice(0, 3);
-      return `<div class="acard"><div class="acover" data-view="${esc(a.name)}">${it.length ? it.map(x => `<img src="${esc(x.thumb || x.img)}" alt="" loading="lazy" referrerpolicy="no-referrer">`).join('') : '<div class="ph">снимки подгружаются…</div>'}</div>
+      return `<div class="acard"><div class="acover" data-view="${esc(a.name)}">${it.length ? it.map(x => `<img src="${esc(x.thumb || x.img)}" alt="" loading="lazy" referrerpolicy="no-referrer">`).join('') : (key() ? '<div class="ph">снимки подгружаются…</div>' : '<div class="ph">нажмите «Снимки»</div>')}</div>
         <div class="abody"><b>${esc(a.name)}</b><div class="d">${esc(a.desc)}</div>
         <div class="aact"><button class="btn" data-view="${esc(a.name)}">Снимки</button><button class="btn ghost" data-del="${esc(a.slug)}">Удалить</button></div></div></div>`; }).join('')}</div>`
       : `<div class="hero" style="min-height:30vh"><h1 style="font-size:32px">Пока никого</h1><p>Добавьте фотографа по имени — я подберу похожих</p></div>`}
@@ -353,6 +365,7 @@ let feedOrder = null;
 function renderFeed(){
   const m = $('#main');
   if (!artists.length) { m.innerHTML = `<div class="hero"><h1>Здесь будет общая лента</h1><p>Добавьте фотографов во вкладке «Мои фотографы» — их снимки появятся здесь вперемешку.</p><button class="btn primary" onclick="">Перейти</button></div>`; m.querySelector('.btn').onclick = () => setTab('mine'); return; }
+  if (!key()) { m.innerHTML = `<div class="hero"><h1>Лента снимков</h1><p>Чтобы снимки всех ваших фотографов показывались здесь общей лентой, нужен ключ поиска картинок.</p><button class="btn primary" id="gk">Добавить ключ</button></div>`; $('#gk').onclick = () => { showKey = true; render(); }; return; }
   m.innerHTML = `<div class="rhead"><div><h2>Лента</h2><div class="sub">${artists.length} ${pl(artists.length, 'фотограф', 'фотографа', 'фотографов')} вперемешку</div></div><button class="btn" id="shuf">⤨ Перемешать</button></div>
     <div class="masonry" id="grid"></div><div class="status" id="st"></div>`;
   $('#shuf').onclick = () => { feedOrder = null; render(); };
