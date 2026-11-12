@@ -93,7 +93,6 @@ main{padding:22px 24px 60px;max-width:1900px;margin:0 auto}
     <button data-t="search">Поиск</button>
     <button data-t="pins">Пины<small id="nPins"></small></button>
     <button data-t="favs">Избранные<small id="nFavs"></small></button>
-    <button data-t="recs">Для вас</button>
   </nav>
   <button class="btn ghost" id="keyBtn" title="Ключ поиска">⚙︎</button>
 </header>
@@ -316,7 +315,7 @@ function togglePin(id){
   const it = (view && view.items.find(x => x.id === id)) || pins.find(p => p.id === id); if (!it) return;
   if (isPinned(id)) { pins = pins.filter(p => p.id !== id); toast('Убрано из пинов'); }
   else { pins.unshift({ id: it.id, img: it.img, thumb: it.thumb, w: it.w, h: it.h, title: it.title, link: it.link, domain: it.domain, owner: it.owner }); toast('Запинено'); }
-  LS.set('pins', pins); LS.set('recDirty', true);
+  LS.set('pins', pins);
   document.querySelectorAll(`[data-pin="${id}"]`).forEach(b => setPinBtn(b, isPinned(id)));
   if (!$('#lb').hidden) syncLb();
   counts();
@@ -354,7 +353,7 @@ function render(){
   if (tab === 'search') renderSearch(m);
   else if (tab === 'pins') renderPins(m);
   else if (tab === 'favs') renderFavs(m);
-  else renderRecs(m);
+  else { tab = 'search'; renderSearch(m); }
 }
 
 /* ---- 1. search ---- */
@@ -523,75 +522,8 @@ function renderFavs(m){
 function toggleFav(name){
   if (isFav(name)) { favs = favs.filter(f => slug(f.name) !== slug(name)); toast('Убрано из избранного'); }
   else { favs.unshift({ name, added: Date.now() }); toast('★ ' + name + ' в избранном'); }
-  LS.set('favs', favs); LS.set('recDirty', true); counts();
+  LS.set('favs', favs); counts();
 }
-
-/* ---- 4. recommendations ---- */
-async function wd(url){ const r = await fetch(url, { headers: { 'Accept': 'application/sparql-results+json' } }); if (!r.ok) throw new Error(r.status); return r.json(); }
-async function findQ(name){
-  const j = await wd('https://www.wikidata.org/w/api.php?action=wbsearchentities&format=json&origin=*&type=item&limit=8&language=en&uselang=ru&search=' + encodeURIComponent(name));
-  const s = j.search || [];
-  const good = s.find(x => /photograph|фотограф/i.test(x.description || '')) || s.find(x => /artist|художник|sculptor|скульптор|painter/i.test(x.description || ''));
-  return (good || s[0] || {}).id || null;
-}
-const sparql = q => wd('https://query.wikidata.org/sparql?format=json&query=' + encodeURIComponent(q));
-async function similarTo(name){
-  const k = 'r.' + slug(name); const c = LS.get(k, null); if (c) return c;
-  try {
-    const Q = await findQ(name); if (!Q) { LS.set(k, []); return []; }
-    const sel = `SELECT ?p (SAMPLE(?lab) AS ?name) (COUNT(DISTINCT ?k) AS ?score) (MAX(?sl) AS ?pop) WHERE {`;
-    const tail = `?p wdt:P106 wd:Q33231 . FILTER(?p != wd:${Q}) ?p wikibase:sitelinks ?sl .
-      OPTIONAL { ?p rdfs:label ?lab . FILTER(LANG(?lab) = "en") } } GROUP BY ?p ORDER BY DESC(?score) DESC(?pop) LIMIT 40`;
-    const q1 = sel + `{ wd:${Q} wdt:P135 ?k . ?p wdt:P135 ?k . } UNION { wd:${Q} wdt:P136 ?k . ?p wdt:P136 ?k . }
-      UNION { wd:${Q} wdt:P737 ?p . BIND("i1" AS ?k) } UNION { ?p wdt:P737 wd:${Q} . BIND("i2" AS ?k) }
-      UNION { wd:${Q} wdt:P1066 ?p . BIND("s1" AS ?k) } UNION { ?p wdt:P1066 wd:${Q} . BIND("s2" AS ?k) } ` + tail;
-    let rows = (await sparql(q1)).results.bindings.map(r => ({ r, w: 1 }));
-    if (rows.length < 8) {
-      const q2 = sel + `wd:${Q} wdt:P27 ?c ; wdt:P569 ?b . ?p wdt:P27 ?c ; wdt:P569 ?pb . FILTER(ABS(YEAR(?pb) - YEAR(?b)) <= 15) BIND("era" AS ?k) ` + tail;
-      rows = rows.concat((await sparql(q2)).results.bindings.map(r => ({ r, w: 0.4 })));
-    }
-    const out = [], seen = new Set();
-    for (const { r, w } of rows) { const n = r.name && r.name.value; if (!n || seen.has(n)) continue; seen.add(n); out.push({ name: n, score: w * (+(r.score ? r.score.value : 1)), pop: +(r.pop ? r.pop.value : 0) }); }
-    LS.set(k, out.slice(0, 30)); return out;
-  } catch (e) { console.warn('wikidata', e); return []; }
-}
-async function computeRecs(){
-  const sig = new Map();
-  favs.forEach(f => sig.set(f.name, (sig.get(f.name) || 0) + 2));
-  pins.forEach(p => { if (!isFav(p.owner)) sig.set(p.owner, (sig.get(p.owner) || 0) + 1); });
-  const dism = LS.get('dismissed', []);
-  const merged = new Map();
-  for (const [n, w] of [...sig.entries()].sort((a, b) => b[1] - a[1]).slice(0, 12)) {
-    for (const r of await similarTo(n)) {
-      if (isFav(r.name) || dism.includes(r.name) || slug(r.name) === slug(n)) continue;
-      const m = merged.get(r.name) || { name: r.name, score: 0, pop: r.pop, from: [] };
-      m.score += w * r.score; if (!m.from.includes(n)) m.from.push(n); merged.set(r.name, m);
-    }
-  }
-  const list = [...merged.values()].sort((a, b) => (b.from.length - a.from.length) || (b.score - a.score) || (b.pop - a.pop)).slice(0, 10);
-  LS.set('recList', list); LS.set('recDirty', false);
-  return list;
-}
-async function renderRecs(m){
-  if (!favs.length && !pins.length) { m.innerHTML = `<div class="hero"><h1>Подборка для вас</h1><p>Добавьте фотографов в избранное (☆) или запиньте снимки (📌) — и здесь появятся работы похожих авторов.</p></div>`; return; }
-  if (!key()) { m.innerHTML = keyPanel(); bindKey(); return; }
-  let list = LS.get('recList', null);
-  if (!list || LS.get('recDirty', true)) {
-    m.innerHTML = `<div class="status" style="padding:80px">Подбираю похожих авторов…</div>`;
-    list = await computeRecs();
-    if (tab !== 'recs') return;
-  }
-  if (!list.length) { m.innerHTML = `<div class="hero"><h1>Пока не из чего подобрать</h1><p>У выбранных авторов мало данных в открытой базе Wikidata. Добавьте в избранное ещё пару фотографов.</p></div>`; return; }
-  m.innerHTML = `<div class="rhead"><div class="l"><h2>Для вас</h2><button class="btn ghost" id="reRec">↻ Обновить подборку</button></div>${modeSeg()}</div>
-    <div class="chips" style="margin-bottom:16px">${list.map(r => `<span class="chip"><span class="s" data-fav="${esc(r.name)}" title="В избранное">☆</span><span data-q="${esc(r.name)}">${esc(r.name)}</span><em>похож на ${esc(r.from.slice(0, 2).join(', '))}</em><span class="x" data-dismiss="${esc(r.name)}" title="Не показывать">✕</span></span>`).join('')}</div>
-    <div id="vbox"></div>`;
-  $('#reRec').onclick = () => { LS.set('recDirty', true); render(); };
-  const names = list.map(r => r.name);
-  makeView($('#vbox'), mixed(names), { key: 'recs', more: feedMore(names), empty: 'Снимков не нашлось.' });
-}
-
-let scrollT;
-window.addEventListener('scroll', () => { clearTimeout(scrollT); scrollT = setTimeout(() => { if (view && mode === 'grid') remember(view); }, 200); }, { passive: true });
 
 /* ============ lightbox ============ */
 let lbI = 0;
@@ -621,7 +553,6 @@ document.addEventListener('click', e => {
   const q = t.closest('[data-q]'); if (q) { query = q.dataset.q; LS.set('query', query); setTab('search'); return; }
   const fv = t.closest('[data-fav]'); if (fv) { toggleFav(fv.dataset.fav); render(); return; }
   const uf = t.closest('[data-unfav]'); if (uf) { toggleFav(uf.dataset.unfav); render(); return; }
-  const ds = t.closest('[data-dismiss]'); if (ds) { const d = LS.get('dismissed', []); d.push(ds.dataset.dismiss); LS.set('dismissed', d.slice(-500)); LS.set('recDirty', true); render(); return; }
   const ar = t.closest('[data-cv]'); if (ar && view) { cvGo(view, view.idx + (+ar.dataset.cv)); return; }
   if (t.closest('.src')) return;
   const tl = t.closest('.tile'); if (tl) { openLb(tl.dataset.id); return; }
