@@ -132,13 +132,23 @@ const isFav = n => favs.some(f => slug(f.name) === slug(n));
 const isPinned = id => pins.some(p => p.id === id);
 
 /* ============ image search (Serper → Google Images) ============ */
-const TAILS = ['photography', 'photograph', 'photographer', 'photographs', 'photo', 'untitled photograph', 'gelatin silver print', 'chromogenic print', 'vintage print', 'photography exhibition', 'photography museum', 'photography gallery', 'photobook', 'photography archive', 'photography series', 'black and white photography', 'color photography', 'portrait photography', 'photography retrospective', 'photography auction', 'фотограф', 'Fotografie', 'photographie', 'fotografia', 'work', 'artwork', '1950s photograph', '1970s photograph'];
+const TAILS = ['photography artwork', 'photographs by', 'photograph print', 'photography work', 'artwork', 'gelatin silver print', 'chromogenic print', 'vintage print', 'photography series', 'photobook pages', 'photography exhibition installation', 'photograph museum collection', 'photograph gallery', 'photograph auction lot', 'black and white photograph', 'color photograph', 'untitled photograph', 'photographs archive', 'photography retrospective', 'Fotografie Werk', 'photographie œuvre', 'fotografia opera', 'photograph 1950s', 'photograph 1970s', 'photograph 1990s', 'photography book'];
 const normUrl = u => String(u || '').toLowerCase().replace(/^https?:\/\/(www\.)?/, '').replace(/[?#].*$/, '').replace(/(-\d+x\d+|_\d+x\d+|-scaled|@2x)(?=\.\w+$)/, '');
-const cache = n => LS.get('c.' + slug(n), null) || { items: [], step: 0, done: false };
-const saveCache = (n, d) => LS.set('c.' + slug(n), d);
+const cache = n => LS.get('c2.' + slug(n), null) || { items: [], step: 0, done: false };
+const saveCache = (n, d) => LS.set('c2.' + slug(n), d);
 const toObj = (a, owner) => ({ id: hashStr(a[0]), img: a[0], thumb: a[1], w: a[2], h: a[3], title: a[4], link: a[5], domain: a[6], owner });
 const cachedItems = n => cache(n).items.map(a => toObj(a, n));
 const running = new Set();
+/* skip pictures OF the photographer (portraits, interviews, obituaries) — we want their work */
+function aboutPerson(x, name){
+  const t = String(x.title || '').toLowerCase(), n = name.toLowerCase(), d = String(x.domain || x.source || '').toLowerCase();
+  if (/self[- ]?portrait|автопортрет/.test(t)) return false;
+  if (/(portrait|photo|picture|headshot|image) of\b|headshot|interview|obituary|biography|\bdies\b|\bdied\b|\bbio\b|meet the|who is|wikipedia|портрет|интервью|биограф/.test(t)) return true;
+  const bare = t.replace(/[-–|:,.()]/g, ' ').replace(/\b(photographer|artist|photography|american|french|british|german|japanese)\b/g, ' ').replace(/\s+/g, ' ').trim();
+  if (bare === n || bare === n.split(' ').reverse().join(' ')) return true;   // a caption that is just the name = profile photo
+  if (/wikipedia|wikimedia/.test(d) && t.includes(n.split(' ').pop()) && !/\b(19|20)\d\d\b|untitled|print/.test(t)) return true;
+  return false;
+}
 
 async function serper(q){
   const r = await fetch('https://google.serper.dev/images', { method: 'POST', headers: { 'X-API-KEY': key(), 'Content-Type': 'application/json' }, body: JSON.stringify({ q, safe: 'active' }) });
@@ -159,6 +169,7 @@ async function fetchMore(name, steps){
       const res = await serper(base + ' ' + TAILS[d.step]); d.step++;
       for (const x of res) {
         const img = x.imageUrl; if (!img || !/^https?:/.test(img)) continue;
+        if (aboutPerson(x, base)) continue;
         const k = normUrl(img); if (seen.has(k) || (x.thumbnailUrl && seenT.has(x.thumbnailUrl))) continue;
         seen.add(k); if (x.thumbnailUrl) seenT.add(x.thumbnailUrl);
         const a = [img, x.thumbnailUrl || '', x.imageWidth || 0, x.imageHeight || 0, String(x.title || '').slice(0, 90), x.link || '', x.domain || x.source || ''];
