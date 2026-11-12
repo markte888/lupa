@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>Лупа</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f0f0f;--panel:#181818;--panel2:#202020;--line:#2c2c2c;--text:#f1f1f1;--muted:#9a9a9a;--acc:#e8b86a;--f:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 var(--f);-webkit-font-smoothing:antialiased}
+a{color:inherit}button,input{font:inherit;color:inherit}[hidden]{display:none!important}
+.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:22px;padding:12px 24px;background:rgba(15,15,15,.9);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.logo{font-weight:700;font-size:22px;letter-spacing:-.02em}.logo i{color:var(--acc);font-style:normal}
+.tabs{display:flex;gap:4px;flex:1}
+.tabs button{border:0;background:transparent;color:var(--muted);padding:9px 16px;border-radius:999px;cursor:pointer;font-weight:500;font-size:15px}
+.tabs button:hover{color:var(--text)}.tabs button.on{background:var(--text);color:#111}
+.tabs small{opacity:.6;margin-left:4px}
+.btn{display:inline-flex;align-items:center;gap:6px;font-weight:500;border:1px solid var(--line);background:transparent;padding:9px 16px;border-radius:999px;cursor:pointer;white-space:nowrap;font-size:14px;text-decoration:none}
+.btn:hover{border-color:#555}.btn.primary{background:var(--text);color:#111;border-color:var(--text)}.btn.ghost{border-color:transparent;color:var(--muted)}.btn.ghost:hover{color:var(--text)}
+.btn:disabled{opacity:.4;cursor:default}
+main{padding:24px 24px 90px;max-width:1900px;margin:0 auto}
+.bar{display:flex;gap:10px;max-width:760px;margin:0 auto 26px}
+.bar input{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:14px 22px;outline:none;font-size:17px}
+.bar input:focus{border-color:#555}
+.hero{min-height:56vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+.hero h1{font-size:clamp(34px,5vw,56px);letter-spacing:-.03em;margin:0 0 8px}
+.hero p{color:var(--muted);margin:0 0 26px}
+.hero .bar{width:100%}
+.hint{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.chip{border:1px solid var(--line);background:transparent;border-radius:999px;padding:6px 13px;font-size:13px;color:var(--muted);cursor:pointer}
+.chip:hover{color:var(--text);border-color:#555}
+.rhead{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+.rhead h2{font-size:30px;letter-spacing:-.02em;margin:0}
+.sub{color:var(--muted);font-size:14px}
+.masonry{columns:236px;column-gap:12px}
+.tile{break-inside:avoid;margin:0 0 12px;border-radius:14px;overflow:hidden;background:var(--panel2);position:relative;cursor:zoom-in;animation:in .35s both}
+@keyframes in{from{opacity:0;transform:translateY(6px)}}
+.tile img{display:block;width:100%;height:auto}
+.tile .ov{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:10px;background:linear-gradient(rgba(0,0,0,.35),transparent 30%,transparent 55%,rgba(0,0,0,.8));opacity:0;transition:.2s}
+.tile:hover .ov{opacity:1}
+.ov .tr{display:flex;justify-content:flex-end}
+.ov .x{width:30px;height:30px;border-radius:50%;border:0;background:rgba(15,15,15,.75);cursor:pointer}
+.ov .src{font-size:12px;line-height:1.35;color:#ddd;text-decoration:none}
+.ov .src b{display:block;color:#fff;font-weight:600}
+.status{color:var(--muted);text-align:center;padding:28px;font-size:14px}
+/* artists */
+.agrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:18px}
+.acard{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
+.acover{aspect-ratio:4/3;background:var(--panel2);display:grid;grid-template-columns:2fr 1fr;grid-template-rows:1fr 1fr;gap:2px;cursor:pointer}
+.acover img{width:100%;height:100%;object-fit:cover;display:block}
+.acover img:first-child{grid-row:span 2}
+.acover .ph{grid-column:span 2;grid-row:span 2;display:grid;place-items:center;color:var(--muted);font-size:13px}
+.abody{padding:12px 14px 14px;display:flex;flex-direction:column;gap:2px;flex:1}
+.abody b{font-size:16px}
+.abody .d{color:var(--muted);font-size:13px;line-height:1.35;flex:1}
+.aact{display:flex;gap:6px;margin-top:10px}.aact .btn{padding:6px 12px;font-size:13px}
+.section{margin:40px 0 16px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.section h3{font-size:22px;margin:0;letter-spacing:-.02em}
+.rcard{background:var(--panel);border:1px dashed #3a3a3a;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:4px}
+.rcard b{font-size:16px}.rcard .d{color:var(--muted);font-size:13px;line-height:1.35;flex:1}
+.rcard .why{font-size:12px;color:var(--acc)}
+.empty{max-width:620px;margin:40px auto;border:1px solid var(--line);border-radius:18px;padding:32px;background:var(--panel)}
+.empty h2{margin:0 0 8px;font-size:26px;letter-spacing:-.02em}
+.empty ol{line-height:1.9;padding-left:20px}.empty a{color:var(--acc)}
+.empty input{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px 14px;outline:none;margin:10px 0}
+/* lightbox */
+.lb{position:fixed;inset:0;z-index:50;background:rgba(8,8,8,.97);display:flex;flex-direction:column}
+.lb .st{flex:1;display:grid;place-items:center;padding:20px 70px 8px;min-height:0}
+.lb .st img{max-width:100%;max-height:100%;object-fit:contain}
+.lb .nav{position:absolute;top:50%;transform:translateY(-50%);width:50px;height:50px;border-radius:50%;border:1px solid #333;background:rgba(20,20,20,.6);font-size:24px;cursor:pointer}
+.lb .pv{left:14px}.lb .nx{right:14px}.lb .cl{position:absolute;top:14px;right:14px}
+.lb .lbar{display:flex;gap:14px;align-items:center;padding:12px 22px 18px;flex-wrap:wrap}
+.lb .t{flex:1;min-width:200px}.lb .t b{display:block}.lb .t span{color:var(--muted);font-size:13px}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:80;background:var(--text);color:#111;padding:10px 18px;border-radius:999px;font-weight:500;font-size:14px}
+@media(max-width:700px){.top{padding:10px 12px;gap:8px;flex-wrap:wrap}.tabs{order:3;flex-basis:100%}.tabs button{padding:7px 12px;font-size:14px}main{padding:16px 12px 80px}.masonry{columns:2;column-gap:8px}.tile{margin-bottom:8px;border-radius:10px}.lb .st{padding:10px}.agrid{grid-template-columns:1fr 1fr;gap:10px}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="logo">Лупа<i>.</i></div>
+  <nav class="tabs" id="tabs">
+    <button data-t="search">Поиск</button>
+    <button data-t="mine">Мои фотографы<small id="cntMine"></small></button>
+    <button data-t="feed">Лента</button>
+  </nav>
+  <button class="btn ghost" id="keyBtn" title="Ключ поиска">⚙︎</button>
+</header>
+<main id="main"></main>
+
+<div class="lb" id="lb" hidden>
+  <button class="btn cl" id="lbX">Закрыть ✕</button>
+  <div class="st" id="lbSt"><img id="lbImg" alt="" referrerpolicy="no-referrer"></div>
+  <button class="nav pv" id="lbP">‹</button><button class="nav nx" id="lbN">›</button>
+  <div class="lbar"><div class="t" id="lbT"></div><span class="sub" id="lbC"></span><a class="btn" id="lbSrc" target="_blank" rel="noopener">Открыть источник ↗</a><button class="btn ghost" id="lbHide">Скрыть</button></div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function(){
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const LS = {
+  get(k, d){ try { const v = localStorage.getItem('lupa2.' + k); return v ? JSON.parse(v) : d; } catch { return d; } },
+  set(k, v){ try { localStorage.setItem('lupa2.' + k, JSON.stringify(v)); } catch { toast('Память браузера заполнена — удалите кого-нибудь из «Моих фотографов»'); } },
+  del(k){ try { localStorage.removeItem('lupa2.' + k); } catch {} }
+};
+let tt; function toast(t, ms = 2600){ const el = $('#toast'); el.textContent = t; el.hidden = false; clearTimeout(tt); tt = setTimeout(() => el.hidden = true, ms); }
+const slug = n => n.trim().toLowerCase().replace(/\s+/g, '-');
+const pl = (n, a, b, c) => { const m = n % 10, h = n % 100; return m === 1 && h !== 11 ? a : (m >= 2 && m <= 4 && (h < 10 || h >= 20) ? b : c); };
+const hashStr = s => { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return Math.abs(h).toString(36); };
+
+/* ================= data ================= */
+let tab = LS.get('tab', 'search');
+let artists = LS.get('artists', []);          // [{name, slug, desc, added}]
+let lastQuery = LS.get('lastQuery', '');
+const key = () => LS.get('key', '');
+const isMine = name => artists.some(a => a.slug === slug(name));
+
+// image cache per photographer: items as [img, thumb, w, h, title, link, domain]
+const cache = s => { const d = LS.get('c.' + s, null) || { items: [], step: 0, done: false, hide: [] }; return d; };
+const saveCache = (s, d) => LS.set('c.' + s, d);
+const toObj = (a, owner) => ({ id: hashStr(a[0]), img: a[0], thumb: a[1], w: a[2], h: a[3], title: a[4], link: a[5], domain: a[6], owner });
+const visibleItems = (s, owner) => { const d = cache(s); return d.items.filter(a => !d.hide.includes(hashStr(a[0]))).map(a => toObj(a, owner)); };
+
+/* ================= image search (Serper) ================= */
+const TAILS = ['photograph', '', 'photography', 'photo', 'photographs', 'untitled', 'print', 'gelatin silver print', 'chromogenic print', 'vintage print', 'exhibition', 'museum', 'gallery', 'collection', 'book', 'archive', 'artwork', 'art', 'works', 'black and white', 'color photograph', 'portrait', 'series', 'auction', 'retrospective', 'фото', 'Fotografie', 'photographie', 'fotografia', '1930s', '1950s', '1970s'];
+const normUrl = u => String(u || '').toLowerCase().replace(/^https?:\/\/(www\.)?/, '').replace(/[?#].*$/, '').replace(/(-\d+x\d+|_\d+x\d+|-scaled|@2x)(?=\.\w+$)/, '');
+const running = new Set();
+
+async function serper(q){
+  const r = await fetch('https://google.serper.dev/images', { method: 'POST', headers: { 'X-API-KEY': key(), 'Content-Type': 'application/json' }, body: JSON.stringify({ q, safe: 'active' }) });
+  if (r.status === 401 || r.status === 403) throw { code: 'key' };
+  if (r.status === 429) throw { code: 'rate' };
+  if (!r.ok) throw { code: 'http', status: r.status, text: await r.text().catch(() => '') };
+  const j = await r.json(); return Array.isArray(j.images) ? j.images : [];
+}
+/* fetch `steps` more queries for a name; onNew(items) called as images arrive */
+async function fetchMore(name, steps, onNew){
+  const s = slug(name); if (running.has(s) || !key()) return false;
+  const d = cache(s); if (d.done) return false;
+  running.add(s); let ok = true;
+  const seen = new Set(d.items.map(a => normUrl(a[0]))), seenT = new Set(d.items.map(a => a[1]));
+  const base = name.replace(/["']/g, '').trim();
+  try {
+    for (let n = 0; n < steps && d.step < TAILS.length; n++) {
+      const res = await serper((base + ' ' + TAILS[d.step]).trim());
+      d.step++;
+      const fresh = [];
+      for (const x of res) {
+        const img = x.imageUrl; if (!img || !/^https?:/.test(img)) continue;
+        const k = normUrl(img); if (seen.has(k) || (x.thumbnailUrl && seenT.has(x.thumbnailUrl))) continue;
+        seen.add(k); if (x.thumbnailUrl) seenT.add(x.thumbnailUrl);
+        const a = [img, x.thumbnailUrl || '', x.imageWidth || 0, x.imageHeight || 0, String(x.title || '').slice(0, 90), x.link || '', x.domain || x.source || ''];
+        d.items.push(a); fresh.push(toObj(a, name));
+      }
+      if (d.step >= TAILS.length) d.done = true;
+      saveCache(s, d);
+      if (fresh.length && onNew) onNew(fresh);
+    }
+  } catch (e) {
+    saveCache(s, d); ok = false;
+    if (e.code === 'key') { toast('Ключ поиска не подошёл — введите его заново', 5000); LS.set('key', ''); render(); }
+    else if (e.code === 'rate') toast('Сервис поиска просит паузу — попробуйте через минуту');
+    else if (e.code === 'http') toast(/credits|quota|balance/i.test(e.text) ? 'Закончились запросы Serper — пополните на serper.dev' : 'Ошибка поиска: ' + e.status);
+    else toast('Нет соединения с поиском');
+  } finally { running.delete(s); }
+  return ok;
+}
+
+/* hide broken/visual duplicates (compares tiny thumbnails when the browser allows) */
+const hashes = new Map();
+function dhash(url){
+  return new Promise(res => {
+    if (!url) return res(null);
+    const im = new Image(); im.crossOrigin = 'anonymous'; im.referrerPolicy = 'no-referrer';
+    im.onload = () => { try { const c = document.createElement('canvas'); c.width = 9; c.height = 8; const x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(im, 0, 0, 9, 8); const p = x.getImageData(0, 0, 9, 8).data; let b = ''; for (let y = 0; y < 8; y++) for (let i = 0; i < 8; i++) { const a = (y * 9 + i) * 4; b += (p[a] + p[a+1] + p[a+2]) > (p[a+4] + p[a+5] + p[a+6]) ? '1' : '0'; } res(b); } catch { res(null); } };
+    im.onerror = () => res(null); im.src = url;
+  });
+}
+const ham = (a, b) => { let n = 0; for (let i = 0; i < 64; i++) if (a[i] !== b[i]) n++; return n; };
+async function dupCheck(it, el){
+  const h = await dhash(it.thumb); if (!h) return;
+  for (const [id, o] of hashes) if (id !== it.id && ham(h, o) <= 2) { el.remove(); return; }
+  hashes.set(it.id, h);
+}
+
+/* ================= tiles & masonry ================= */
+let current = [];   // list shown in current masonry (for lightbox)
+function tile(it){
+  const el = document.createElement('figure'); el.className = 'tile'; el.dataset.id = it.id;
+  const r = it.w && it.h ? `aspect-ratio:${it.w}/${it.h}` : '';
+  el.innerHTML = `<img src="${esc(it.img)}" alt="" loading="lazy" referrerpolicy="no-referrer" style="${r}">
+    <div class="ov"><div class="tr"><button class="x" title="Скрыть" data-hide="${esc(it.id)}">✕</button></div>
+    <a class="src" href="${esc(it.link || it.img)}" target="_blank" rel="noopener"><b>${esc(tab === 'feed' ? it.owner : it.title)}</b>${esc(it.domain)} ↗</a></div>`;
+  const im = el.querySelector('img');
+  im.onerror = () => { if (it.thumb && im.src !== it.thumb) { im.src = it.thumb; im.style.aspectRatio = ''; } else el.remove(); };
+  current.push(it);
+  dupCheck(it, el);
+  return el;
+}
+function hideItem(id){
+  const it = current.find(x => x.id === id); if (!it) return;
+  const s = slug(it.owner); const d = cache(s); if (!d.hide.includes(id)) { d.hide.push(id); saveCache(s, d); }
+  document.querySelectorAll(`.tile[data-id="${id}"]`).forEach(e => e.remove());
+  current = current.filter(x => x.id !== id);
+  toast('Скрыто');
+}
+let io;
+function watchEnd(el, fn){ if (io) io.disconnect(); io = new IntersectionObserver(es => { if (es[0].isIntersecting) fn(); }, { rootMargin: '1400px' }); io.observe(el); }
+
+/* ================= render ================= */
+function render(){
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === tab));
+  $('#cntMine').textContent = artists.length ? artists.length : '';
+  current = []; hashes.clear(); if (io) io.disconnect();
+  if (!key()) { renderKey(); return; }
+  if (tab === 'search') renderSearch();
+  else if (tab === 'mine') renderMine();
+  else renderFeed();
+  window.scrollTo(0, 0);
+}
+function setTab(t){ tab = t; LS.set('tab', t); render(); }
+$('#tabs').addEventListener('click', e => { const b = e.target.closest('[data-t]'); if (b) setTab(b.dataset.t); });
+$('#keyBtn').onclick = () => { if (confirm('Ввести другой ключ поиска?')) { LS.set('key', ''); render(); } };
+
+function renderKey(){
+  $('#main').innerHTML = `<div class="empty"><h2>Один раз: ключ поиска картинок</h2>
+    <div class="sub">Снимки берутся из Google Картинок через сервис Serper. Новым пользователям он даёт бесплатные запросы.</div>
+    <ol><li>Зарегистрируйтесь на <a href="https://serper.dev" target="_blank" rel="noopener">serper.dev</a>.</li>
+    <li>Откройте <a href="https://serper.dev/api-key" target="_blank" rel="noopener">API Key</a> и скопируйте ключ.</li>
+    <li>Вставьте сюда — он хранится только в этом браузере.</li></ol>
+    <input id="keyIn" placeholder="Вставьте ключ" autocomplete="off"><button class="btn primary" id="keySave">Сохранить</button></div>`;
+  $('#keySave').onclick = () => { const v = $('#keyIn').value.trim(); if (v) { LS.set('key', v); render(); } };
+}
+
+/* ---------- tab 1: search ---------- */
+function renderSearch(){
+  const m = $('#main');
+  if (!lastQuery) {
+    m.innerHTML = `<div class="hero"><h1>Чьи снимки смотрим?</h1><p>Впишите имя фотографа или художника</p>
+      <form class="bar" id="sf"><input id="si" placeholder="Например: Saul Leiter" autocomplete="off" autofocus><button class="btn primary">Найти</button></form>
+      <div class="hint">${['Morton Bartlett','Saul Leiter','Vivian Maier','Rinko Kawauchi','Francesca Woodman','Daido Moriyama'].map(n => `<button class="chip" data-q="${esc(n)}">${esc(n)}</button>`).join('')}</div></div>`;
+    bindSearchForm(); return;
+  }
+  const name = lastQuery, s = slug(name), mine = isMine(name);
+  m.innerHTML = `<form class="bar" id="sf"><input id="si" value="${esc(name)}" autocomplete="off"><button class="btn primary">Найти</button></form>
+    <div class="rhead"><div><h2>${esc(name)}</h2><div class="sub" id="cnt"></div></div>
+      ${mine ? `<span class="sub">✓ В моих фотографах</span>` : `<button class="btn primary" data-add="${esc(name)}">+ Добавить в мои фотографы</button>`}</div>
+    <div class="masonry" id="grid"></div><div class="status" id="st"></div>`;
+  bindSearchForm();
+  const grid = $('#grid'); const items = visibleItems(s, name);
+  items.forEach(it => grid.appendChild(tile(it)));
+  const upd = () => { $('#cnt') && ($('#cnt').textContent = current.length + ' ' + pl(current.length, 'снимок', 'снимка', 'снимков')); };
+  upd();
+  const more = async () => {
+    if (lastQuery !== name || tab !== 'search') return;
+    const d = cache(s); const st = $('#st'); if (!st) return;
+    if (d.done) { st.textContent = current.length ? 'Это всё, что нашлось.' : 'Ничего не нашлось — проверьте написание имени.'; return; }
+    if (running.has(s)) return;
+    st.textContent = 'Ищу снимки…';
+    const ok = await fetchMore(name, 4, fresh => { if (lastQuery === name && tab === 'search' && $('#grid')) { fresh.forEach(it => $('#grid').appendChild(tile(it))); upd(); } });
+    if ($('#st')) $('#st').textContent = cache(s).done ? 'Это всё, что нашлось.' : '';
+    if (ok && tab === 'search' && lastQuery === name && $('#st')) { const r = $('#st').getBoundingClientRect(); if (r.top < innerHeight + 1400) more(); }
+  };
+  watchEnd($('#st'), more);
+  if (!items.length) more();
+}
+function bindSearchForm(){
+  $('#sf').addEventListener('submit', e => { e.preventDefault(); const v = $('#si').value.trim(); if (!v) return; lastQuery = v; LS.set('lastQuery', v); render(); });
+}
+
+/* ---------- tab 2: my photographers + recommendations ---------- */
+function addArtist(name, desc){
+  name = name.trim(); if (!name || isMine(name)) return;
+  artists.unshift({ name, slug: slug(name), desc: desc || '', added: Date.now() });
+  LS.set('artists', artists);
+  toast(name + ' — в моих фотографах');
+  fetchMore(name, 8).then(() => { if (tab === 'mine') renderMine(); });  // start collecting their photos for the feed
+  loadRecs(name).then(() => { if (tab === 'mine') renderRecs(); });
+}
+function renderMine(){
+  const m = $('#main');
+  m.innerHTML = `<form class="bar" id="af"><input id="ai" placeholder="Добавить фотографа: имя и фамилия" autocomplete="off"><button class="btn primary">Добавить</button></form>
+    ${artists.length ? `<div class="agrid">${artists.map(a => { const it = visibleItems(a.slug, a.name).slice(0, 3);
+      return `<div class="acard"><div class="acover" data-view="${esc(a.name)}">${it.length ? it.map(x => `<img src="${esc(x.thumb || x.img)}" alt="" loading="lazy" referrerpolicy="no-referrer">`).join('') : '<div class="ph">снимки подгружаются…</div>'}</div>
+        <div class="abody"><b>${esc(a.name)}</b><div class="d">${esc(a.desc)}</div>
+        <div class="aact"><button class="btn" data-view="${esc(a.name)}">Снимки</button><button class="btn ghost" data-del="${esc(a.slug)}">Удалить</button></div></div></div>`; }).join('')}</div>`
+      : `<div class="hero" style="min-height:30vh"><h1 style="font-size:32px">Пока никого</h1><p>Добавьте фотографа по имени — я подберу похожих</p></div>`}
+    <div class="section"><h3>Похожие авторы</h3><span class="sub" id="recSub"></span></div>
+    <div class="agrid" id="recs"></div>`;
+  $('#af').addEventListener('submit', e => { e.preventDefault(); const v = $('#ai').value.trim(); if (v) { addArtist(v); renderMine(); } });
+  renderRecs();
+  artists.forEach(a => { if (!LS.get('r.' + a.slug, null)) loadRecs(a.name).then(() => { if (tab === 'mine') renderRecs(); }); });
+}
+
+/* recommendations from Wikidata: shared movement/genre, influences, teachers/students; fallback same country & generation */
+async function wd(url){ const r = await fetch(url, { headers: { 'Accept': 'application/sparql-results+json' } }); if (!r.ok) throw new Error(r.status); return r.json(); }
+async function findQ(name){
+  const j = await wd('https://www.wikidata.org/w/api.php?action=wbsearchentities&format=json&origin=*&type=item&limit=8&language=en&uselang=ru&search=' + encodeURIComponent(name));
+  const s = j.search || [];
+  const good = s.find(x => /photograph|фотограф|artist|художник|painter|sculptor/i.test(x.description || ''));
+  return (good || s[0] || {}).id || null;
+}
+const sparql = q => wd('https://query.wikidata.org/sparql?format=json&query=' + encodeURIComponent(q));
+async function loadRecs(name){
+  const s = slug(name); if (LS.get('r.' + s, null)) return;
+  try {
+    const Q = await findQ(name); if (!Q) { LS.set('r.' + s, []); return; }
+    const sel = `SELECT ?p (SAMPLE(?lab) AS ?name) (SAMPLE(?dru) AS ?ru) (SAMPLE(?den) AS ?en) (COUNT(DISTINCT ?k) AS ?score) (MAX(?sl) AS ?pop) WHERE {`;
+    const tail = `?p wdt:P106 wd:Q33231 . FILTER(?p != wd:${Q}) ?p wikibase:sitelinks ?sl .
+      OPTIONAL { ?p rdfs:label ?lab . FILTER(LANG(?lab) = "en") }
+      OPTIONAL { ?p schema:description ?dru . FILTER(LANG(?dru) = "ru") }
+      OPTIONAL { ?p schema:description ?den . FILTER(LANG(?den) = "en") }
+    } GROUP BY ?p ORDER BY DESC(?score) DESC(?pop) LIMIT 40`;
+    const q1 = sel + `{ wd:${Q} wdt:P135 ?k . ?p wdt:P135 ?k . } UNION { wd:${Q} wdt:P136 ?k . ?p wdt:P136 ?k . }
+      UNION { wd:${Q} wdt:P737 ?p . BIND("i1" AS ?k) } UNION { ?p wdt:P737 wd:${Q} . BIND("i2" AS ?k) }
+      UNION { wd:${Q} wdt:P1066 ?p . BIND("s1" AS ?k) } UNION { ?p wdt:P1066 wd:${Q} . BIND("s2" AS ?k) } ` + tail;
+    let rows = (await sparql(q1)).results.bindings;
+    if (rows.length < 8) {
+      const q2 = sel + `wd:${Q} wdt:P27 ?c ; wdt:P569 ?b . ?p wdt:P27 ?c ; wdt:P569 ?pb . FILTER(ABS(YEAR(?pb) - YEAR(?b)) <= 15) BIND("era" AS ?k) ` + tail;
+      rows = rows.concat((await sparql(q2)).results.bindings.map(r => ({ ...r, era: true })));
+    }
+    const out = []; const seen = new Set();
+    for (const r of rows) {
+      const n = r.name && r.name.value; if (!n || seen.has(n) || /^Q\d+$/.test(n)) continue; seen.add(n);
+      out.push({ name: n, desc: (r.ru || r.en || {}).value || '', score: r.era ? 0.5 : +(r.score ? r.score.value : 1), pop: +(r.pop ? r.pop.value : 0), from: name });
+    }
+    LS.set('r.' + s, out.slice(0, 30));
+  } catch (e) { console.warn('recs', e); }
+}
+function renderRecs(){
+  const box = $('#recs'); if (!box) return;
+  const dism = LS.get('dismissed', []);
+  const merged = new Map();
+  for (const a of artists) for (const r of (LS.get('r.' + a.slug, []) || [])) {
+    if (isMine(r.name) || dism.includes(r.name)) continue;
+    const m = merged.get(r.name) || { ...r, total: 0, froms: [] };
+    m.total += r.score; if (!m.froms.includes(r.from)) m.froms.push(r.from); merged.set(r.name, m);
+  }
+  const list = [...merged.values()].sort((a, b) => (b.froms.length - a.froms.length) || (b.total - a.total) || (b.pop - a.pop)).slice(0, 16);
+  const loading = artists.some(a => !LS.get('r.' + a.slug, null));
+  $('#recSub').textContent = !artists.length ? 'появятся, когда добавите первого фотографа' : (loading && !list.length ? 'подбираю…' : 'по направлению, жанру и влияниям, из Wikidata');
+  box.innerHTML = list.map(r => `<div class="rcard"><b>${esc(r.name)}</b><div class="d">${esc(r.desc)}</div>
+      <div class="why">похож на ${esc(r.froms.join(', '))}</div>
+      <div class="aact"><button class="btn primary" data-addr="${esc(r.name)}" data-desc="${esc(r.desc)}">+ Добавить</button><button class="btn" data-view="${esc(r.name)}">Снимки</button><button class="btn ghost" data-no="${esc(r.name)}">✕</button></div></div>`).join('')
+    || (artists.length && !loading ? `<div class="sub">Похожих не нашлось — у этих авторов мало данных в Wikidata. Добавьте ещё кого-нибудь.</div>` : '');
+}
+
+/* ---------- tab 3: feed of everyone ---------- */
+let feedOrder = null;
+function renderFeed(){
+  const m = $('#main');
+  if (!artists.length) { m.innerHTML = `<div class="hero"><h1>Здесь будет общая лента</h1><p>Добавьте фотографов во вкладке «Мои фотографы» — их снимки появятся здесь вперемешку.</p><button class="btn primary" onclick="">Перейти</button></div>`; m.querySelector('.btn').onclick = () => setTab('mine'); return; }
+  m.innerHTML = `<div class="rhead"><div><h2>Лента</h2><div class="sub">${artists.length} ${pl(artists.length, 'фотограф', 'фотографа', 'фотографов')} вперемешку</div></div><button class="btn" id="shuf">⤨ Перемешать</button></div>
+    <div class="masonry" id="grid"></div><div class="status" id="st"></div>`;
+  $('#shuf').onclick = () => { feedOrder = null; render(); };
+  // interleave all photographers' photos, shuffled within each
+  const pools = artists.map(a => shuffle(visibleItems(a.slug, a.name)));
+  const all = []; let i = 0; while (pools.some(p => p.length)) { const p = pools[i % pools.length]; if (p.length) all.push(p.shift()); i++; }
+  let shown = 0;
+  const chunk = async () => {
+    if (tab !== 'feed') return;
+    const grid = $('#grid'); if (!grid) return;
+    if (shown < all.length) { all.slice(shown, shown + 40).forEach(it => grid.appendChild(tile(it))); shown = Math.min(all.length, shown + 40); return; }
+    // ran out: fetch more for the photographer with the fewest photos
+    const next = artists.filter(a => !cache(a.slug).done && !running.has(a.slug)).sort((a, b) => cache(a.slug).items.length - cache(b.slug).items.length)[0];
+    if (!next) { $('#st').textContent = 'Вы долистали до конца. Добавьте ещё фотографов — лента станет длиннее.'; return; }
+    $('#st').textContent = 'Подгружаю ещё…';
+    const ok = await fetchMore(next.name, 2, fresh => { if (tab === 'feed' && $('#grid')) shuffle(fresh).forEach(it => { all.push(it); }); });
+    if ($('#st')) $('#st').textContent = '';
+    if (ok && tab === 'feed') chunk();
+  };
+  watchEnd($('#st'), chunk);
+  chunk();
+}
+function shuffle(a){ for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+/* ================= lightbox ================= */
+let lbI = 0;
+function openLb(id){ lbI = Math.max(0, current.findIndex(x => x.id === id)); $('#lb').hidden = false; document.body.style.overflow = 'hidden'; syncLb(); }
+function closeLb(){ $('#lb').hidden = true; document.body.style.overflow = ''; }
+function syncLb(){
+  const live = current.filter(x => document.querySelector(`.tile[data-id="${x.id}"]`));
+  if (!live.length) return closeLb(); lbI = (lbI + live.length) % live.length; const it = live[lbI];
+  const im = $('#lbImg'); im.onerror = () => { if (it.thumb && im.src !== it.thumb) im.src = it.thumb; }; im.src = it.img;
+  $('#lbT').innerHTML = `<b>${esc(it.owner)}</b><span>${esc(it.title)} · ${esc(it.domain)}</span>`;
+  $('#lbC').textContent = `${lbI + 1} / ${live.length}`; $('#lbSrc').href = it.link || it.img; $('#lbHide').dataset.id = it.id;
+}
+$('#lbX').onclick = closeLb; $('#lbP').onclick = () => { lbI--; syncLb(); }; $('#lbN').onclick = () => { lbI++; syncLb(); };
+$('#lbSt').onclick = e => { if (e.target.id === 'lbSt') closeLb(); };
+$('#lbHide').onclick = () => { hideItem($('#lbHide').dataset.id); syncLb(); };
+document.addEventListener('keydown', e => {
+  if ($('#lb').hidden) return;
+  if (e.key === 'Escape') closeLb(); if (e.key === 'ArrowRight') { lbI++; syncLb(); } if (e.key === 'ArrowLeft') { lbI--; syncLb(); }
+});
+
+/* ================= clicks ================= */
+document.addEventListener('click', e => {
+  const t = e.target;
+  const q = t.closest('[data-q]'); if (q) { lastQuery = q.dataset.q; LS.set('lastQuery', lastQuery); render(); return; }
+  const h = t.closest('[data-hide]'); if (h) { e.stopPropagation(); hideItem(h.dataset.hide); return; }
+  if (t.closest('.src')) return;
+  const tl = t.closest('.tile'); if (tl) { openLb(tl.dataset.id); return; }
+  const ad = t.closest('[data-add]'); if (ad) { addArtist(ad.dataset.add); render(); return; }
+  const ar = t.closest('[data-addr]'); if (ar) { addArtist(ar.dataset.addr, ar.dataset.desc); renderMine(); return; }
+  const v = t.closest('[data-view]'); if (v) { lastQuery = v.dataset.view; LS.set('lastQuery', lastQuery); setTab('search'); return; }
+  const no = t.closest('[data-no]'); if (no) { const d = LS.get('dismissed', []); d.push(no.dataset.no); LS.set('dismissed', d.slice(-500)); renderRecs(); return; }
+  const del = t.closest('[data-del]'); if (del) { const a = artists.find(x => x.slug === del.dataset.del); if (a && confirm('Убрать «' + a.name + '» из моих фотографов?')) { artists = artists.filter(x => x !== a); LS.set('artists', artists); LS.del('r.' + a.slug); renderMine(); $('#cntMine').textContent = artists.length || ''; } return; }
+});
+
+/* first run: carry over the key from the earlier page if there was one */
+try { const old = localStorage.getItem('lupa.key'); if (!key() && old) LS.set('key', JSON.parse(old)); } catch {}
+render();
+})();
+</script>
+</body>
+</html>
