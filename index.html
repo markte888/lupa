@@ -65,7 +65,7 @@ main{padding:22px 24px 60px;max-width:1900px;margin:0 auto}
 .slide.on{opacity:1;transform:none;cursor:zoom-in}
 .slide img{max-height:100%;max-width:78vw;display:block;border-radius:4px;box-shadow:0 30px 80px rgba(0,0,0,.5);min-width:120px;background:var(--panel2)}
 .cvbar{display:flex;align-items:center;gap:10px;padding-top:14px;flex-wrap:wrap}
-.cvbar .cap{flex:1;min-width:160px;font-size:14px;color:#d6d1c6}.cvbar .cap b{color:#fff}.cvbar .cap a{color:var(--acc);text-decoration:none}
+.cvbar .cap{flex:1;min-width:160px;font-size:14px;color:#d6d1c6}.cvbar .cap b{color:#fff;font-size:19px;font-weight:600;letter-spacing:-.01em;margin-right:4px}.cvbar .cap a{color:var(--acc);text-decoration:none}
 .arrow{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:transparent;font-size:22px;cursor:pointer}
 .cvbar .pin{padding:9px 16px;background:#262626}.cvbar .pin.on{background:var(--acc)}
 /* key panel */
@@ -220,7 +220,7 @@ function makeView(box, initial, opts){
     v.wrap = box.querySelector('.masonry');
   } else {
     box.innerHTML = `<div class="cv"><div class="pad"></div><div class="pad"></div></div>
-      <div class="cvbar"><button class="arrow" data-cv="-1">‹</button><button class="arrow" data-cv="1">›</button><span class="sub cn"></span><span class="cap"></span><button class="btn star" data-fav="">☆ В избранное</button><button class="btn ghost" data-q="">Все работы →</button><button class="pin" data-pinactive="1">📌 Пин</button></div><div class="status"></div>`;
+      <div class="cvbar"><button class="arrow" data-cv="-1">‹</button><button class="arrow" data-cv="1">›</button><span class="sub cn"></span><span class="cap"></span><button class="btn star" data-fav="">☆ В избранное</button><button class="btn ghost" data-q="">Все работы →</button><button class="btn ghost" data-hideauthor="">🙈 Скрыть автора</button><button class="pin" data-pinactive="1">📌 Пин</button></div><div class="status"></div>`;
     v.wrap = box.querySelector('.cv'); v.endPad = v.wrap.lastElementChild;
     let raf; v.wrap.addEventListener('scroll', () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => cvSync(v)); }, { passive: true });
   }
@@ -312,6 +312,7 @@ function cvSync(v){
   bar.querySelector('.cap').innerHTML = `<b>${esc(it.owner)}</b>${who} · <a href="${esc(it.link || it.img)}" target="_blank" rel="noopener">${esc(it.domain)} ↗</a>`;
   const st = bar.querySelector('[data-fav]'); st.dataset.fav = it.owner; const f = isFav(it.owner); st.classList.toggle('on', f); st.textContent = f ? '★ В избранном' : '☆ В избранное';
   const aw = bar.querySelector('[data-q]'); aw.dataset.q = it.owner; aw.hidden = tab === 'search';
+  const ha = bar.querySelector('[data-hideauthor]'); ha.dataset.hideauthor = it.owner; ha.hidden = tab !== 'disc';
   const pb = bar.querySelector('.pin'); pb.hidden = false; pb.dataset.pin = it.id; setPinBtn(pb, isPinned(it.id));
   if (sl.length - best < 6) more(v);
 }
@@ -657,16 +658,36 @@ const UNCANNY = [
 ];
 const KNOWN = new Set(["Ralph Eugene Meatyard", "Francesca Woodman", "Duane Michals", "Arthur Tress", "Gregory Crewdson", "Diane Arbus", "Roger Ballen", "Claude Cahun", "Man Ray", "Dora Maar", "Jerry Uelsmann", "Laurie Simmons", "Cindy Sherman", "Tim Walker", "Erwin Blumenfeld", "Masahisa Fukase", "Eikoh Hosoe", "Daido Moriyama", "Shoji Ueda", "Hiroshi Sugimoto", "Viviane Sassen", "Erik Johansson", "Thomas Demand", "Loretta Lux", "Julie Blackmon", "Charles Fréger", "Chema Madoz", "Pieter Hugo", "Sandy Skoglund", "Paolo Ventura", "Yasumasa Morimura", "Lucas Samaras", "Mario Giacomelli", "Graciela Iturbide", "Manuel Álvarez Bravo", "Pentti Sammallahti", "Robert and Shana ParkeHarrison", "Alex Prager", "Cristina de Middel", "Sarah Moon", "Deborah Turbeville", "Hannah Höch", "Herbert Bayer", "Maurice Tabard", "Philippe Halsman", "Weegee", "Ikko Narahara", "Trent Parke", "Todd Hido", "Erwin Wurm", "Wolfgang Tillmans", "Rinko Kawauchi", "Bernard Plossu", "Adam Fuss", "Aaron Siskind", "Minor White", "David Lynch", "Joel-Peter Witkin", "Andres Serrano", "Christian Boltanski", "Erwin Olaf", "Nobuyoshi Araki", "Miroslav Tichý", "Jan Švankmajer", "Brothers Quay", "David Levinthal", "Kiki Smith", "Patricia Piccinini", "Ron Mueck", "Mark Ryden", "Ray Caesar", "Floris Neusüss", "Eugène Atget mannequins", "Kati Horna", "Grete Stern", "Lieko Shiga", "Anna Gaskell", "Wynn Bullock", "Asger Carlsen"]);
 UNCANNY.forEach(([n, d]) => { DESC[n] = d; });
-async function discPool(){ return UNCANNY.map(([n]) => ({ n, known: KNOWN.has(n) })); }
-/* pick a photographer: half the time a better-known one, half the time anyone — for real discovery */
+/* topics of each author, read from the short description */
+const TOPICS = [
+  ['куклы', /кукл|манекен|марионет|игрушк|реборн/i], ['сюрреализм 20–40-х', /сюрреал|фотомонтаж|соляриз|коллаж|30-х|наложени|Веймар/i],
+  ['мрачное и тело', /морг|смерт|мёртв|тело|тела|фетиш|эрос|провока|бойни|анатом|гротеск/i], ['постановка', /постанов|сцен|театр|двойник|маск|образ/i],
+  ['сны и сказки', /сны|сон|сказк|маги|мистич|видени|призрач|дух/i], ['Япония', /японск|токий/i], ['абстракция', /абстрак|фотограм|форм|тени/i],
+  ['аутсайдеры', /уличн|самодел|фотобуд|автопортрет/i], ['места и руины', /руин|дома|пейзаж|деревн|Юг|улиц|город|фабрик/i]
+];
+const topicsOf = n => { const d = DESC[n] || ''; const t = TOPICS.filter(([, re]) => re.test(d)).map(([k]) => k); return t.length ? t : ['другое']; };
+const hiddenAuthors = () => LS.get('hiddenAuthors', []);
+async function discPool(){ const hid = new Set(hiddenAuthors()); return UNCANNY.filter(([n]) => !hid.has(n)).map(([n]) => ({ n, known: KNOWN.has(n) })); }
+/* how much we still want each topic: hiding an author lowers his topics */
+function weightOf(n){ const tw = LS.get('topicW', {}); return topicsOf(n).reduce((w, t) => w * (tw[t] ?? 1), 1); }
 function pickName(pool, recent){
-  for (let i = 0; i < 30; i++) {
-    // mostly lesser-known names; a famous one only now and then
-    const cand = Math.random() < 0.8 ? pool.filter(p => !p.known) : pool.filter(p => p.known);
-    const x = cand[Math.floor(Math.random() * cand.length)];
-    if (x && !recent.includes(x.n)) return x.n;
-  }
-  return pool[Math.floor(Math.random() * pool.length)].n;
+  // mostly lesser-known names; a famous one only now and then
+  let cand = (Math.random() < 0.8 ? pool.filter(p => !p.known) : pool.filter(p => p.known)).filter(p => !recent.includes(p.n));
+  if (!cand.length) cand = pool.filter(p => !recent.includes(p.n));
+  if (!cand.length) cand = pool;
+  const ws = cand.map(p => Math.max(0.05, weightOf(p.n)));
+  let r = Math.random() * ws.reduce((a, b) => a + b, 0);
+  for (let i = 0; i < cand.length; i++) { r -= ws[i]; if (r <= 0) return cand[i].n; }
+  return cand[cand.length - 1].n;
+}
+function hideAuthor(name){
+  if (!name) return;
+  const hid = hiddenAuthors(); if (!hid.includes(name)) hid.push(name); LS.set('hiddenAuthors', hid);
+  const tw = LS.get('topicW', {}); topicsOf(name).forEach(t => { tw[t] = Math.max(0.15, (tw[t] ?? 1) * 0.7); }); LS.set('topicW', tw);
+  LS.set('discItems2', LS.get('discItems2', []).filter(x => x.owner !== name));
+  if (view) [...view.items].filter(x => x.owner === name).forEach(x => drop(view, x.id));
+  toast('Скрыт: ' + name + ' — похожих будет меньше');
+  const s = $('#hidCount'); if (s) { s.hidden = false; s.textContent = 'Скрытые: ' + hid.length + ' · вернуть'; }
 }
 async function discMore(){
   if (!key()) return null;
@@ -685,7 +706,8 @@ async function discMore(){
   return null;
 }
 function renderDisc(m){
-  m.innerHTML = `<div class="rhead"><div class="l"><h2>Открытия</h2><span class="sub">странные, жутковатые, сюрреалистичные — листайте, ☆ добавляет в избранное</span></div><button class="btn ghost" id="discNew">↻ Начать заново</button></div><div id="vbox"></div>`;
+  m.innerHTML = `<div class="rhead"><div class="l"><h2>Открытия</h2><span class="sub">странные, жутковатые, сюрреалистичные — листайте, ☆ добавляет в избранное</span></div><span class="l"><button class="btn ghost" id="hidCount" ${hiddenAuthors().length ? '' : 'hidden'}>Скрытые: ${hiddenAuthors().length} · вернуть</button><button class="btn ghost" id="discNew">↻ Начать заново</button></span></div><div id="vbox"></div>`;
+  $('#hidCount').onclick = () => { LS.set('hiddenAuthors', []); LS.set('topicW', {}); toast('Все скрытые авторы возвращены'); render(); };
   $('#discNew').onclick = () => { LS.set('discItems2', []); LS.set('view.disc2', null); render(); };
   if (!key()) { $('#vbox').innerHTML = keyPanel(); bindKey(); return; }
   makeView($('#vbox'), LS.get('discItems2', []), { key: 'disc2', more: discMore, empty: 'Не удалось загрузить — попробуйте «Начать заново».' });
@@ -756,6 +778,7 @@ document.addEventListener('keydown', e => {
 });
 document.addEventListener('click', e => {
   const t = e.target;
+  const hb = t.closest('[data-hideauthor]'); if (hb) { hideAuthor(hb.dataset.hideauthor); return; }
   const pb = t.closest('[data-pin]'); if (pb) { e.stopPropagation(); togglePin(pb.dataset.pin); return; }
   const q = t.closest('[data-q]'); if (q && q.dataset.q) { query = q.dataset.q; LS.set('query', query); setTab('search'); return; }
   const fv = t.closest('[data-fav]'); if (fv) { if (!fv.dataset.fav) return; toggleFav(fv.dataset.fav); if (fv.closest('.cvbar')) { if (view) cvSync(view); } else render(); return; }
