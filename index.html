@@ -304,6 +304,11 @@ function cvSync(v){
   const mid = cv.scrollLeft + cv.clientWidth / 2; let best = 0, bd = 1e9;
   sl.forEach((s, i) => { const d = Math.abs(s.offsetLeft + s.offsetWidth / 2 - mid); if (d < bd) { bd = d; best = i; } });
   sl.forEach((s, i) => s.classList.toggle('on', i === best));
+  if (tab === 'disc' && v.lastId !== sl[best].dataset.id) {
+    const prev = v.items.find(x => x.id === v.lastId);
+    if (prev && Date.now() - v.lastAt > 5000) { const dw = LS.get('dwell', {}); dw[prev.owner] = (dw[prev.owner] || 0) + 1; LS.set('dwell', dw); }
+    v.lastId = sl[best].dataset.id; v.lastAt = Date.now();
+  }
   v.idx = best;
   if (!v.restoring) remember(v);
   const it = v.items.find(x => x.id === sl[best].dataset.id); if (!it) return;
@@ -668,8 +673,17 @@ const TOPICS = [
 const topicsOf = n => { const d = DESC[n] || ''; const t = TOPICS.filter(([, re]) => re.test(d)).map(([k]) => k); return t.length ? t : ['другое']; };
 const hiddenAuthors = () => LS.get('hiddenAuthors', []);
 async function discPool(){ const hid = new Set(hiddenAuthors()); return UNCANNY.filter(([n]) => !hid.has(n)).map(([n]) => ({ n, known: KNOWN.has(n) })); }
-/* how much we still want each topic: hiding an author lowers his topics */
-function weightOf(n){ const tw = LS.get('topicW', {}); return topicsOf(n).reduce((w, t) => w * (tw[t] ?? 1), 1); }
+/* learning: favorites, pins and lingering on a photo raise that author's topics */
+function likes(){
+  const score = {};
+  const add = (n, w) => topicsOf(n).forEach(t => { if (t !== 'другое') score[t] = (score[t] || 0) + w; });
+  favs.forEach(f => add(f.name, 1));
+  pins.forEach(p => add(p.owner, 0.5));
+  const dw = LS.get('dwell', {}); Object.entries(dw).forEach(([n, c]) => add(n, Math.min(c, 10) * 0.1));
+  return score;
+}
+function weightOf(n){ const s = likes(); return 1 + topicsOf(n).reduce((a, t) => a + Math.min(s[t] || 0, 6), 0); }
+function likedSummary(){ return Object.entries(likes()).sort((a, b) => b[1] - a[1]).filter(([, v]) => v >= 1).slice(0, 3).map(([k]) => k); }
 function pickName(pool, recent){
   // mostly lesser-known names; a famous one only now and then
   let cand = (Math.random() < 0.8 ? pool.filter(p => !p.known) : pool.filter(p => p.known)).filter(p => !recent.includes(p.n));
@@ -683,10 +697,9 @@ function pickName(pool, recent){
 function hideAuthor(name){
   if (!name) return;
   const hid = hiddenAuthors(); if (!hid.includes(name)) hid.push(name); LS.set('hiddenAuthors', hid);
-  const tw = LS.get('topicW', {}); topicsOf(name).forEach(t => { tw[t] = Math.max(0.15, (tw[t] ?? 1) * 0.7); }); LS.set('topicW', tw);
   LS.set('discItems2', LS.get('discItems2', []).filter(x => x.owner !== name));
   if (view) [...view.items].filter(x => x.owner === name).forEach(x => drop(view, x.id));
-  toast('Скрыт: ' + name + ' — похожих будет меньше');
+  toast('Скрыт: ' + name);
   const s = $('#hidCount'); if (s) { s.hidden = false; s.textContent = 'Скрытые: ' + hid.length + ' · вернуть'; }
 }
 async function discMore(){
@@ -706,8 +719,8 @@ async function discMore(){
   return null;
 }
 function renderDisc(m){
-  m.innerHTML = `<div class="rhead"><div class="l"><h2>Открытия</h2><span class="sub">странные, жутковатые, сюрреалистичные — листайте, ☆ добавляет в избранное</span></div><span class="l"><button class="btn ghost" id="hidCount" ${hiddenAuthors().length ? '' : 'hidden'}>Скрытые: ${hiddenAuthors().length} · вернуть</button><button class="btn ghost" id="discNew">↻ Начать заново</button></span></div><div id="vbox"></div>`;
-  $('#hidCount').onclick = () => { LS.set('hiddenAuthors', []); LS.set('topicW', {}); toast('Все скрытые авторы возвращены'); render(); };
+  m.innerHTML = `<div class="rhead"><div class="l"><h2>Открытия</h2><span class="sub">${likedSummary().length ? 'сайт заметил, что вам нравятся: ' + esc(likedSummary().join(', ')) : 'странные, жутковатые, сюрреалистичные — ☆ и 📌 учат сайт вашему вкусу'}</span></div><span class="l"><button class="btn ghost" id="hidCount" ${hiddenAuthors().length ? '' : 'hidden'}>Скрытые: ${hiddenAuthors().length} · вернуть</button><button class="btn ghost" id="discNew">↻ Начать заново</button></span></div><div id="vbox"></div>`;
+  $('#hidCount').onclick = () => { LS.set('hiddenAuthors', []); toast('Все скрытые авторы возвращены'); render(); };
   $('#discNew').onclick = () => { LS.set('discItems2', []); LS.set('view.disc2', null); render(); };
   if (!key()) { $('#vbox').innerHTML = keyPanel(); bindKey(); return; }
   makeView($('#vbox'), LS.get('discItems2', []), { key: 'disc2', more: discMore, empty: 'Не удалось загрузить — попробуйте «Начать заново».' });
