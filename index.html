@@ -87,6 +87,11 @@ main{padding:22px 24px 60px;max-width:1900px;margin:0 auto}
 .lb .pin{padding:9px 16px;background:#262626}.lb .pin.on{background:var(--acc)}
 .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:80;background:var(--text);color:#111;padding:10px 18px;border-radius:999px;font-weight:500;font-size:14px}
 @media(max-width:700px){.top{padding:10px 12px;gap:8px;flex-wrap:wrap}.tabs{order:3;flex-basis:100%}.tabs button{padding:7px 11px;font-size:14px}main{padding:14px 12px 60px}.masonry{columns:2;column-gap:8px}.tile{margin-bottom:8px;border-radius:10px}.cv{margin:0 -12px;gap:10px;height:calc(100vh - 330px)}.slide img{max-width:84vw}.lb .st{padding:10px}.lb .st img{max-width:calc(100vw - 20px);max-height:calc(100dvh - 170px)}.ov{opacity:1!important;background:linear-gradient(transparent 60%,rgba(0,0,0,.7))!important}.ov .src{display:none}}
+.pin{width:44px;height:44px;padding:0!important;border-radius:50%!important;border:1px solid var(--line)!important;background:transparent!important;color:var(--text)!important;display:inline-grid;place-items:center;cursor:pointer}
+.pin:hover{border-color:#666!important}
+.pin svg{width:20px;height:20px}
+.pin.on{background:var(--text)!important;color:#111!important;border-color:var(--text)!important}
+.rb.fav.on{background:var(--text)!important;border-color:var(--text)!important;color:#111!important}
 </style>
 </head>
 <body>
@@ -106,7 +111,7 @@ main{padding:22px 24px 60px;max-width:1900px;margin:0 auto}
   <button class="btn cl" id="lbX">Close ✕</button>
   <div class="st" id="lbSt"><img id="lbImg" alt="" referrerpolicy="no-referrer"></div>
   <button class="nav pv" id="lbP">‹</button><button class="nav nx" id="lbN">›</button>
-  <div class="lbar"><div class="t" id="lbT"></div><span class="sub" id="lbC"></span><button class="pin" id="lbPin">📌 Pin</button><a class="btn" id="lbSrc" target="_blank" rel="noopener">Source ↗</a></div>
+  <div class="lbar"><div class="t" id="lbT"></div><span class="sub" id="lbC"></span><button class="pin" id="lbPin" title="Pin"></button><a class="btn" id="lbSrc" target="_blank" rel="noopener">Source ↗</a></div>
 </div>
 <div class="toast" id="toast" hidden></div>
 
@@ -126,6 +131,8 @@ const pl = (n, a, b, c) => { const m = n % 10, h = n % 100; return m === 1 && h 
 
 /* ============ state ============ */
 let tab = LS.get('tab', 'search');
+const PIN_ICON = "<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><path d='M9 3h6l-1 6 3 3H7l3-3-1-6z'/><path d='M12 12v9'/></svg>";
+const PIN_ICON_ON = "<svg viewBox='0 0 24 24' fill='currentColor' stroke='currentColor' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><path d='M9 3h6l-1 6 3 3H7l3-3-1-6z'/><path d='M12 12v9'/></svg>";
 const mode = 'cv';                               // carousel only
 let query = LS.get('query', '');
 let favs = LS.get('favs', []);                   // [{name, added}]
@@ -222,7 +229,7 @@ function makeView(box, initial, opts){
     v.wrap = box.querySelector('.masonry');
   } else {
     box.innerHTML = `<div class="cv"><div class="pad"></div><div class="pad"></div></div>
-      <div class="cvbar"><button class="arrow" data-cv="-1">‹</button><button class="arrow" data-cv="1">›</button><span class="sub cn"></span><span class="cap"></span><button class="rb fav" data-fav="" title="Add to favorites">+</button><button class="rb neg" data-hideauthor="" title="Never show this artist again">−</button><button class="btn ghost" data-q="">All works →</button><button class="pin" data-pinactive="1">📌 Pin</button></div><div class="status"></div>`;
+      <div class="cvbar"><button class="arrow" data-cv="-1">‹</button><button class="arrow" data-cv="1">›</button><span class="sub cn"></span><span class="cap"></span><button class="rb fav" data-fav="" title="Add to favorites">+</button><button class="rb neg" data-hideauthor="" title="Never show this artist again">−</button><button class="btn ghost" data-q="">All works →</button><button class="pin" data-pinactive="1" title="Pin"></button></div><div class="status"></div>`;
     v.wrap = box.querySelector('.cv'); v.endPad = v.wrap.lastElementChild;
     let raf; v.wrap.addEventListener('scroll', () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => cvSync(v)); }, { passive: true });
   }
@@ -258,7 +265,7 @@ function add(v, arr){
     if (mode === 'grid') {
       el.className = 'tile';
       el.innerHTML = `<img src="${esc(it.img)}" alt="" loading="lazy" referrerpolicy="no-referrer" style="${r}">
-        <div class="ov"><div class="tr"><button class="pin ${isPinned(it.id) ? 'on' : ''}" data-pin="${esc(it.id)}">${isPinned(it.id) ? '📌 Pinned' : '📌 Pin'}</button></div>
+        <div class="ov"><div class="tr"><button class="pin ${isPinned(it.id) ? 'on' : ''}" data-pin="${esc(it.id)}">${isPinned(it.id) ? PIN_ICON_ON : PIN_ICON}</button></div>
         <a class="src" href="${esc(it.link || it.img)}" target="_blank" rel="noopener"><b>${esc(it.owner)}</b>${esc(it.domain)} ↗</a></div>`;
       v.wrap.appendChild(el);
     } else {
@@ -324,7 +331,7 @@ function cvSync(v){
   if (sl.length - best < 6) more(v);
 }
 function cvGo(v, i){ const sl = v.wrap.querySelectorAll('.slide'); i = Math.max(0, Math.min(sl.length - 1, i)); const s = sl[i]; if (s) v.wrap.scrollTo({ left: s.offsetLeft + s.offsetWidth / 2 - v.wrap.clientWidth / 2, behavior: 'smooth' }); }
-function setPinBtn(b, on){ b.classList.toggle('on', on); b.textContent = on ? '📌 Pinned' : '📌 Pin'; }
+function setPinBtn(b, on){ b.classList.toggle('on', on); b.innerHTML = on ? PIN_ICON_ON : PIN_ICON; b.title = on ? 'Pinned — click to unpin' : 'Pin'; }
 
 /* pins */
 function togglePin(id){
@@ -736,7 +743,7 @@ async function discMore(){
   return null;
 }
 function renderDisc(m){
-  m.innerHTML = `<div class="rhead"><div class="l"><h2>Discover</h2><span class="sub">${likedSummary().length ? 'you seem to like: ' + esc(likedSummary().join(', ')) : 'strange, uncanny, surreal — + and 📌 teach the site your taste'}</span></div><span class="l"><button class="btn ghost" id="hidCount" ${hiddenAuthors().length ? '' : 'hidden'}>Hidden: ${hiddenAuthors().length} · restore</button><button class="btn ghost" id="discNew">↻ Start over</button></span></div><div id="vbox"></div>`;
+  m.innerHTML = `<div class="rhead"><div class="l"><h2>Discover</h2><span class="sub">${likedSummary().length ? 'you seem to like: ' + esc(likedSummary().join(', ')) : 'strange, uncanny, surreal — + and pins teach the site your taste'}</span></div><span class="l"><button class="btn ghost" id="hidCount" ${hiddenAuthors().length ? '' : 'hidden'}>Hidden: ${hiddenAuthors().length} · restore</button><button class="btn ghost" id="discNew">↻ Start over</button></span></div><div id="vbox"></div>`;
   $('#hidCount').onclick = () => { LS.set('hiddenAuthors', []); toast('All hidden artists restored'); render(); };
   $('#discNew').onclick = () => { LS.set('discItems2', []); LS.set('view.disc2', null); render(); };
   if (!key()) { $('#vbox').innerHTML = keyPanel(); bindKey(); return; }
@@ -745,7 +752,7 @@ function renderDisc(m){
 
 /* ---- 2. pins ---- */
 function renderPins(m){
-  if (!pins.length) { m.innerHTML = `<div class="hero"><h1>No pins yet</h1><p>Tap 📌 on any photo — your pins will gather here.</p></div>`; return; }
+  if (!pins.length) { m.innerHTML = `<div class="hero"><h1>No pins yet</h1><p>Tap the pin button under any photo — your pins will gather here.</p></div>`; return; }
   m.innerHTML = `<div class="rhead"><div class="l"><h2>Pins</h2><span class="sub">${pins.length} ${pins.length === 1 ? 'photo' : 'photos'}</span></div>${modeSeg()}</div><div id="vbox"></div>`;
   makeView($('#vbox'), pins.slice(), { key: 'pins', more: null, empty: 'No pins left.' });
 }
