@@ -98,6 +98,9 @@ main{padding:22px 24px 60px;max-width:1900px;margin:0 auto}
 .rb.fav.on{font-size:28px!important;font-weight:600!important}
 .pin svg{width:26px!important;height:26px!important}
 @media(max-width:700px){.rb,.pin{width:48px!important;height:48px!important}.rb{font-size:30px!important}.pin svg{width:24px!important;height:24px!important}}
+.rb{padding:0!important;line-height:0!important}
+.rb svg{width:26px;height:26px;display:block}
+@media(max-width:700px){.rb svg{width:24px;height:24px}}
 </style>
 </head>
 <body>
@@ -137,6 +140,9 @@ const pl = (n, a, b, c) => { const m = n % 10, h = n % 100; return m === 1 && h 
 
 /* ============ state ============ */
 let tab = LS.get('tab', 'search');
+const PLUS_ICON = "<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><path d='M12 5v14M5 12h14'/></svg>";
+const MINUS_ICON = "<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><path d='M5 12h14'/></svg>";
+const CHECK_ICON = "<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'><path d='M5 12.5l4.5 4.5L19 7.5'/></svg>";
 const PIN_ICON = "<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><path d='M9 3h6l-1 6 3 3H7l3-3-1-6z'/><path d='M12 12v9'/></svg>";
 const PIN_ICON_ON = "<svg viewBox='0 0 24 24' fill='currentColor' stroke='currentColor' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><path d='M9 3h6l-1 6 3 3H7l3-3-1-6z'/><path d='M12 12v9'/></svg>";
 const mode = 'cv';                               // carousel only
@@ -235,7 +241,7 @@ function makeView(box, initial, opts){
     v.wrap = box.querySelector('.masonry');
   } else {
     box.innerHTML = `<div class="cv"><div class="pad"></div><div class="pad"></div></div>
-      <div class="cvbar"><button class="arrow" data-cv="-1">‹</button><button class="arrow" data-cv="1">›</button><span class="sub cn"></span><span class="cap"></span><button class="rb fav" data-fav="" title="Add to favorites">+</button><button class="rb neg" data-hideauthor="" title="Never show this artist again">−</button><button class="btn ghost" data-q="">All works →</button><button class="pin" data-pinactive="1" title="Pin"></button></div><div class="status"></div>`;
+      <div class="cvbar"><button class="arrow" data-cv="-1">‹</button><button class="arrow" data-cv="1">›</button><span class="sub cn"></span><span class="cap"></span><button class="rb fav" data-fav="" title="Add to favorites">${PLUS_ICON}</button><button class="rb neg" data-hideauthor="" title="Never show this artist again">${MINUS_ICON}</button><button class="btn ghost" data-q="">All works →</button><button class="pin" data-pinactive="1" title="Pin"></button></div><div class="status"></div>`;
     v.wrap = box.querySelector('.cv'); v.endPad = v.wrap.lastElementChild;
     let raf; v.wrap.addEventListener('scroll', () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => cvSync(v)); }, { passive: true });
   }
@@ -330,7 +336,7 @@ function cvSync(v){
   bar.querySelector('.cn').textContent = `${best + 1} / ${sl.length}`;
   const who = DESC[it.owner] ? ` <span class="sub">${esc(DESC[it.owner])}</span>` : '';
   bar.querySelector('.cap').innerHTML = `<b>${esc(it.owner)}</b>${who} · <a href="${esc(it.link || it.img)}" target="_blank" rel="noopener">${esc(it.domain)} ↗</a>`;
-  const st = bar.querySelector('[data-fav]'); st.dataset.fav = it.owner; const f = isFav(it.owner); st.classList.toggle('on', f); st.textContent = f ? '✓' : '+'; st.title = f ? 'In favorites — click to remove' : 'Add to favorites';
+  const st = bar.querySelector('[data-fav]'); st.dataset.fav = it.owner; const f = isFav(it.owner); st.classList.toggle('on', f); st.innerHTML = f ? CHECK_ICON : PLUS_ICON; st.title = f ? 'In favorites — click to remove' : 'Add to favorites';
   const aw = bar.querySelector('[data-q]'); aw.dataset.q = it.owner; aw.hidden = tab === 'search';
   const ha = bar.querySelector('[data-hideauthor]'); ha.dataset.hideauthor = it.owner; ha.hidden = tab !== 'disc';
   const pb = bar.querySelector('.pin'); pb.hidden = false; pb.dataset.pin = it.id; setPinBtn(pb, isPinned(it.id));
