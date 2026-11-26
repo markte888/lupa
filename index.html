@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="no-referrer">
-<title>Лупа</title>
+<title>Loupe</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0f0f0f;--panel:#181818;--panel2:#202020;--line:#2c2c2c;--text:#f1f1f1;--muted:#9a9a9a;--acc:#e8b86a;--f:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
@@ -89,22 +89,22 @@ main{padding:22px 24px 60px;max-width:1900px;margin:0 auto}
 </head>
 <body>
 <header class="top">
-  <div class="logo">Лупа<i>.</i></div>
+  <div class="logo">Loupe<i>.</i></div>
   <nav class="tabs" id="tabs">
-    <button data-t="search">Поиск</button>
-    <button data-t="disc">Открытия</button>
-    <button data-t="favs">Избранные<small id="nFavs"></small></button>
-    <button data-t="pins">Пины<small id="nPins"></small></button>
+    <button data-t="search">Search</button>
+    <button data-t="disc">Discover</button>
+    <button data-t="favs">Favorites<small id="nFavs"></small></button>
+    <button data-t="pins">Pins<small id="nPins"></small></button>
   </nav>
-  <button class="btn ghost" id="keyBtn" title="Ключ поиска">⚙︎</button>
+  <button class="btn ghost" id="keyBtn" title="Search key">⚙︎</button>
 </header>
 <main id="main"></main>
 
 <div class="lb" id="lb" hidden>
-  <button class="btn cl" id="lbX">Закрыть ✕</button>
+  <button class="btn cl" id="lbX">Close ✕</button>
   <div class="st" id="lbSt"><img id="lbImg" alt="" referrerpolicy="no-referrer"></div>
   <button class="nav pv" id="lbP">‹</button><button class="nav nx" id="lbN">›</button>
-  <div class="lbar"><div class="t" id="lbT"></div><span class="sub" id="lbC"></span><button class="pin" id="lbPin">📌 Пин</button><a class="btn" id="lbSrc" target="_blank" rel="noopener">Источник ↗</a></div>
+  <div class="lbar"><div class="t" id="lbT"></div><span class="sub" id="lbC"></span><button class="pin" id="lbPin">📌 Pin</button><a class="btn" id="lbSrc" target="_blank" rel="noopener">Source ↗</a></div>
 </div>
 <div class="toast" id="toast" hidden></div>
 
@@ -114,7 +114,7 @@ const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const LS = {
   get(k, d){ try { const v = localStorage.getItem('lupa2.' + k); return v ? JSON.parse(v) : d; } catch { return d; } },
-  set(k, v){ try { localStorage.setItem('lupa2.' + k, JSON.stringify(v)); } catch { toast('Память браузера заполнена'); } }
+  set(k, v){ try { localStorage.setItem('lupa2.' + k, JSON.stringify(v)); } catch { toast('Browser storage is full'); } }
 };
 let tt; function toast(t, ms = 2400){ const el = $('#toast'); el.textContent = t; el.hidden = false; clearTimeout(tt); tt = setTimeout(() => el.hidden = true, ms); }
 const slug = n => n.trim().toLowerCase().replace(/\s+/g, ' ');
@@ -184,10 +184,10 @@ async function fetchMore(name, steps){
     return fresh;
   } catch (e) {
     saveCache(name, d);
-    if (e.code === 'key') { toast('Ключ поиска не подошёл — проверьте его в ⚙︎', 5000); }
-    else if (e.code === 'rate') toast('Сервис поиска просит паузу — попробуйте через минуту');
-    else if (e.code === 'http') toast(/credit|quota|balance/i.test(e.text) ? 'Закончились запросы Serper — пополните на serper.dev' : 'Ошибка поиска: ' + e.status);
-    else toast('Нет соединения с поиском');
+    if (e.code === 'key') { toast('Search key was rejected — check it under ⚙︎', 5000); }
+    else if (e.code === 'rate') toast('Search service needs a break — try again in a minute');
+    else if (e.code === 'http') toast(/credit|quota|balance/i.test(e.text) ? 'Out of Serper credits — top up at serper.dev' : 'Search error: ' + e.status);
+    else toast('No connection to search');
     return fresh.length ? fresh : null;
   } finally { running.delete(s); }
 }
@@ -220,7 +220,7 @@ function makeView(box, initial, opts){
     v.wrap = box.querySelector('.masonry');
   } else {
     box.innerHTML = `<div class="cv"><div class="pad"></div><div class="pad"></div></div>
-      <div class="cvbar"><button class="arrow" data-cv="-1">‹</button><button class="arrow" data-cv="1">›</button><span class="sub cn"></span><span class="cap"></span><button class="btn star" data-fav="">☆ В избранное</button><button class="btn ghost" data-q="">Все работы →</button><button class="btn ghost" data-hideauthor="">🙈 Скрыть автора</button><button class="pin" data-pinactive="1">📌 Пин</button></div><div class="status"></div>`;
+      <div class="cvbar"><button class="arrow" data-cv="-1">‹</button><button class="arrow" data-cv="1">›</button><span class="sub cn"></span><span class="cap"></span><button class="btn star" data-fav="">☆ Favorite</button><button class="btn ghost" data-q="">All works →</button><button class="btn ghost" data-hideauthor="">🙈 Hide artist</button><button class="pin" data-pinactive="1">📌 Pin</button></div><div class="status"></div>`;
     v.wrap = box.querySelector('.cv'); v.endPad = v.wrap.lastElementChild;
     let raf; v.wrap.addEventListener('scroll', () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => cvSync(v)); }, { passive: true });
   }
@@ -256,7 +256,7 @@ function add(v, arr){
     if (mode === 'grid') {
       el.className = 'tile';
       el.innerHTML = `<img src="${esc(it.img)}" alt="" loading="lazy" referrerpolicy="no-referrer" style="${r}">
-        <div class="ov"><div class="tr"><button class="pin ${isPinned(it.id) ? 'on' : ''}" data-pin="${esc(it.id)}">${isPinned(it.id) ? '📌 Запинено' : '📌 Пин'}</button></div>
+        <div class="ov"><div class="tr"><button class="pin ${isPinned(it.id) ? 'on' : ''}" data-pin="${esc(it.id)}">${isPinned(it.id) ? '📌 Pinned' : '📌 Pin'}</button></div>
         <a class="src" href="${esc(it.link || it.img)}" target="_blank" rel="noopener"><b>${esc(it.owner)}</b>${esc(it.domain)} ↗</a></div>`;
       v.wrap.appendChild(el);
     } else {
@@ -287,11 +287,11 @@ function drop(v, id){
 }
 async function more(v){
   if (v.loading || v.done || !v.opts.more) { if (!v.opts.more && !v.items.length) status(v, v.opts.empty || ''); return; }
-  v.loading = true; status(v, 'Ищу снимки…');
+  v.loading = true; status(v, 'Finding photos…');
   const fresh = await v.opts.more();
   v.loading = false;
   if (v !== view) return;
-  if (fresh === null) { v.done = true; status(v, v.items.length ? (mode === 'grid' ? 'Это всё, что нашлось.' : '') : (v.opts.empty || 'Ничего не нашлось.')); return; }
+  if (fresh === null) { v.done = true; status(v, v.items.length ? (mode === 'grid' ? 'That’s everything we found.' : '') : (v.opts.empty || 'Nothing found.')); return; }
   add(v, fresh); status(v, '');
   if (mode === 'grid') { const r = v.st.getBoundingClientRect(); if (r.top < innerHeight + 1400) more(v); }
   else if (v.items.length - v.idx < 6) more(v);
@@ -315,20 +315,20 @@ function cvSync(v){
   bar.querySelector('.cn').textContent = `${best + 1} / ${sl.length}`;
   const who = DESC[it.owner] ? ` <span class="sub">${esc(DESC[it.owner])}</span>` : '';
   bar.querySelector('.cap').innerHTML = `<b>${esc(it.owner)}</b>${who} · <a href="${esc(it.link || it.img)}" target="_blank" rel="noopener">${esc(it.domain)} ↗</a>`;
-  const st = bar.querySelector('[data-fav]'); st.dataset.fav = it.owner; const f = isFav(it.owner); st.classList.toggle('on', f); st.textContent = f ? '★ В избранном' : '☆ В избранное';
+  const st = bar.querySelector('[data-fav]'); st.dataset.fav = it.owner; const f = isFav(it.owner); st.classList.toggle('on', f); st.textContent = f ? '★ Favorited' : '☆ Favorite';
   const aw = bar.querySelector('[data-q]'); aw.dataset.q = it.owner; aw.hidden = tab === 'search';
   const ha = bar.querySelector('[data-hideauthor]'); ha.dataset.hideauthor = it.owner; ha.hidden = tab !== 'disc';
   const pb = bar.querySelector('.pin'); pb.hidden = false; pb.dataset.pin = it.id; setPinBtn(pb, isPinned(it.id));
   if (sl.length - best < 6) more(v);
 }
 function cvGo(v, i){ const sl = v.wrap.querySelectorAll('.slide'); i = Math.max(0, Math.min(sl.length - 1, i)); const s = sl[i]; if (s) v.wrap.scrollTo({ left: s.offsetLeft + s.offsetWidth / 2 - v.wrap.clientWidth / 2, behavior: 'smooth' }); }
-function setPinBtn(b, on){ b.classList.toggle('on', on); b.textContent = on ? '📌 Запинено' : '📌 Пин'; }
+function setPinBtn(b, on){ b.classList.toggle('on', on); b.textContent = on ? '📌 Pinned' : '📌 Pin'; }
 
 /* pins */
 function togglePin(id){
   const it = (view && view.items.find(x => x.id === id)) || pins.find(p => p.id === id); if (!it) return;
-  if (isPinned(id)) { pins = pins.filter(p => p.id !== id); toast('Убрано из пинов'); }
-  else { pins.unshift({ id: it.id, img: it.img, thumb: it.thumb, w: it.w, h: it.h, title: it.title, link: it.link, domain: it.domain, owner: it.owner }); toast('Запинено'); }
+  if (isPinned(id)) { pins = pins.filter(p => p.id !== id); toast('Removed from pins'); }
+  else { pins.unshift({ id: it.id, img: it.img, thumb: it.thumb, w: it.w, h: it.h, title: it.title, link: it.link, domain: it.domain, owner: it.owner }); toast('Pinned'); }
   LS.set('pins', pins);
   document.querySelectorAll(`[data-pin="${id}"]`).forEach(b => setPinBtn(b, isPinned(id)));
   if (!$('#lb').hidden) syncLb();
@@ -345,12 +345,12 @@ let showKey = false;
 $('#keyBtn').onclick = () => { showKey = true; render(); };
 
 function keyPanel(){
-  return `<div class="empty"><h2>Нужен ключ поиска картинок</h2>
-    <div class="sub">Снимки приходят из Google Картинок через сервис Serper. Новым пользователям он даёт бесплатные запросы. Ключ вводится один раз и хранится только в этом браузере.</div>
-    <ol><li>Зарегистрируйтесь на <a href="https://serper.dev" target="_blank" rel="noopener">serper.dev</a>.</li>
-    <li>Откройте <a href="https://serper.dev/api-key" target="_blank" rel="noopener">API Key</a> и скопируйте ключ.</li>
-    <li>Вставьте его сюда.</li></ol>
-    <input id="keyIn" placeholder="Вставьте ключ" autocomplete="off" value="${esc(key())}"><button class="btn primary" id="keySave">Сохранить</button>${key() ? ' <button class="btn ghost" id="keyBack">Назад</button>' : ''}</div>`;
+  return `<div class="empty"><h2>An image search key is needed</h2>
+    <div class="sub">Photos come from Google Images through the Serper service, which gives new users free searches. You enter the key once; it stays only in this browser.</div>
+    <ol><li>Sign up at <a href="https://serper.dev" target="_blank" rel="noopener">serper.dev</a>.</li>
+    <li>Open <a href="https://serper.dev/api-key" target="_blank" rel="noopener">API Key</a> and copy your key.</li>
+    <li>Paste it here.</li></ol>
+    <input id="keyIn" placeholder="Paste your key" autocomplete="off" value="${esc(key())}"><button class="btn primary" id="keySave">Save</button>${key() ? ' <button class="btn ghost" id="keyBack">Back</button>' : ''}</div>`;
 }
 function bindKey(){
   const s = $('#keySave'); if (!s) return;
@@ -374,19 +374,19 @@ function render(){
 /* ---- 1. search ---- */
 function renderSearch(m){
   if (!query) {
-    m.innerHTML = `<div class="hero"><h1>Чьи снимки смотрим?</h1><p>Впишите имя фотографа и нажмите Enter</p>
-      <form class="bar" id="sf"><div class="sw"><input id="si" placeholder="Например: Saul Leiter" autocomplete="off" style="width:100%"><div class="sugg" id="sugg" hidden></div></div><button class="btn primary">Найти</button></form>
+    m.innerHTML = `<div class="hero"><h1>Whose photographs?</h1><p>Type a photographer’s name and press Enter</p>
+      <form class="bar" id="sf"><div class="sw"><input id="si" placeholder="e.g. Saul Leiter" autocomplete="off" style="width:100%"><div class="sugg" id="sugg" hidden></div></div><button class="btn primary">Search</button></form>
       <div class="chips" style="justify-content:center">${['Morton Bartlett','Saul Leiter','Vivian Maier','Rinko Kawauchi','Francesca Woodman','Daido Moriyama'].map(n => `<button class="chip" data-q="${esc(n)}">${esc(n)}</button>`).join('')}</div>
       ${key() ? '' : keyPanel()}</div>`;
     bindSearch(); bindKey(); setTimeout(() => $('#si') && $('#si').focus(), 30); return;
   }
   const name = query, fav = isFav(name);
-  m.innerHTML = `<form class="bar" id="sf"><div class="sw"><input id="si" value="${esc(name)}" autocomplete="off" style="width:100%"><div class="sugg" id="sugg" hidden></div></div><button class="btn primary">Найти</button></form>
-    <div class="rhead"><div class="l"><h2>${esc(name)}</h2><button class="btn star ${fav ? 'on' : ''}" data-fav="${esc(name)}">${fav ? '★ В избранном' : '☆ В избранное'}</button></div>${modeSeg()}</div>
+  m.innerHTML = `<form class="bar" id="sf"><div class="sw"><input id="si" value="${esc(name)}" autocomplete="off" style="width:100%"><div class="sugg" id="sugg" hidden></div></div><button class="btn primary">Search</button></form>
+    <div class="rhead"><div class="l"><h2>${esc(name)}</h2><button class="btn star ${fav ? 'on' : ''}" data-fav="${esc(name)}">${fav ? '★ Favorited' : '☆ Favorite'}</button></div>${modeSeg()}</div>
     <div id="vbox"></div>`;
   bindSearch();
   if (!key()) { $('#vbox').innerHTML = keyPanel(); bindKey(); return; }
-  makeView($('#vbox'), cachedItems(name), { key: 'search:' + slug(name), more: () => fetchMore(name, 3), empty: 'Ничего не нашлось — проверьте написание имени.' });
+  makeView($('#vbox'), cachedItems(name), { key: 'search:' + slug(name), more: () => fetchMore(name, 3), empty: 'Nothing found — check the spelling of the name.' });
 }
 function bindSearch(){
   const inp = $('#si'), box = $('#sugg'); let list = [], hi = -1, timer, seq = 0;
@@ -394,7 +394,7 @@ function bindSearch(){
   const close = () => { box.hidden = true; hi = -1; };
   const draw = () => {
     if (!list.length) return close();
-    box.innerHTML = list.map((s, i) => `<div class="${i === hi ? 'on' : ''}" data-i="${i}"><b>${esc(s.name)}</b><span class="${s.photo ? 'ph' : ''}">${esc([s.ru, s.desc].filter(Boolean).join(' — '))}</span></div>`).join('');
+    box.innerHTML = list.map((s, i) => `<div class="${i === hi ? 'on' : ''}" data-i="${i}"><b>${esc(s.name)}</b><span class="${s.photo ? 'ph' : ''}">${esc(s.desc || '')}</span></div>`).join('');
     box.hidden = false;
   };
   inp.addEventListener('input', () => {
@@ -502,181 +502,181 @@ async function suggest(q){
 const DESC = {};
 /* hand-picked: strange, uncanny, dreamlike, surreal photographers */
 const UNCANNY = [
-  ["Ralph Eugene Meatyard", "маски, заброшенные дома, размытые фигуры"],
-  ["Francesca Woodman", "исчезающие фигуры в пустых комнатах"],
-  ["Duane Michals", "фотоистории о снах и призраках"],
-  ["Arthur Tress", "постановочные сны и кошмары"],
-  ["Gregory Crewdson", "кинематографичная тревожная Америка"],
-  ["Diane Arbus", "странное в обычных людях"],
-  ["Roger Ballen", "мрачный театр абсурда"],
-  ["Claude Cahun", "маски и двойники"],
-  ["Man Ray", "сюрреализм, соляризация"],
-  ["Dora Maar", "сюрреалистические фотомонтажи"],
-  ["Kati Horna", "маски и куклы, сюрреализм"],
-  ["Grete Stern", "фотомонтажи «Сны»"],
-  ["Florence Henri", "зеркала и отражения"],
-  ["Jerry Uelsmann", "многослойные сюрреалистичные отпечатки"],
-  ["Clarence John Laughlin", "призрачный американский Юг"],
-  ["Frederick Sommer", "сюрреализм и странные предметы"],
-  ["Wynn Bullock", "мистические пейзажи"],
-  ["Laurie Simmons", "куклы и кукольные интерьеры"],
-  ["Cindy Sherman", "постановочные персонажи"],
-  ["Tim Walker", "сказочная гротескная мода"],
-  ["Erwin Blumenfeld", "искажения и эксперименты"],
-  ["Masahisa Fukase", "вороны и одиночество"],
-  ["Eikoh Hosoe", "японский сюрреализм, буто"],
-  ["Daido Moriyama", "резкое зернистое ночное"],
-  ["Lieko Shiga", "мифы и ночные постановки"],
-  ["Shoji Ueda", "сюрреализм на песчаных дюнах"],
-  ["Kansuke Yamamoto", "японский сюрреализм"],
-  ["Toshiko Okanoue", "коллажи-сны"],
-  ["Hiroshi Sugimoto", "диорамы и восковые фигуры"],
-  ["Viviane Sassen", "тени и странные тела-скульптуры"],
-  ["Asger Carlsen", "искажённые тела-скульптуры"],
-  ["Erik Johansson", "невозможные пейзажи"],
-  ["Thomas Demand", "бумажные копии реальности"],
-  ["Loretta Lux", "кукольно-нереальные портреты"],
-  ["Julie Blackmon", "домашний хаос как живопись"],
-  ["Anna Gaskell", "тревожные сказки"],
-  ["Charles Fréger", "ритуальные костюмы, люди-звери"],
-  ["Gilbert Garcin", "абсурдные сценки с самим собой"],
-  ["Chema Madoz", "поэтичные предметы-загадки"],
-  ["Kensuke Koike", "разрезанные старые фотографии"],
-  ["Pieter Hugo", "люди с гиенами, странные портреты"],
-  ["Sandy Skoglund", "комнаты, захваченные животными"],
-  ["Paolo Ventura", "миниатюрные постановочные миры"],
-  ["Juno Calypso", "розовый жутковатый гламур"],
-  ["Wanda Wulz", "женщина-кошка"],
-  ["Yasumasa Morimura", "переодевание в чужие образы"],
-  ["Lucas Samaras", "искажённые автопортреты"],
-  ["Mario Giacomelli", "танцующие священники"],
-  ["Graciela Iturbide", "ритуалы и птицы Мексики"],
-  ["Manuel Álvarez Bravo", "мексиканский сюрреализм"],
-  ["Pentti Sammallahti", "собаки в пустых пейзажах"],
-  ["Zdzisław Beksiński", "ранние мрачные фотографии"],
-  ["Robert and Shana ParkeHarrison", "странные машины и человек в природе"],
-  ["Alex Prager", "тревожные кинематографичные сцены"],
-  ["Cristina de Middel", "выдуманная документалистика"],
-  ["Petrina Hicks", "гладкие нереальные портреты"],
-  ["Ruud van Empel", "цифровые райские сады"],
-  ["Sarah Moon", "размытые сказки"],
-  ["Deborah Turbeville", "призрачная мода"],
-  ["Jindřich Štyrský", "чешский сюрреализм"],
-  ["Emila Medková", "чешский сюрреализм"],
-  ["Hannah Höch", "фотомонтаж"],
-  ["Herbert Bayer", "сюрреалистичный фотомонтаж"],
-  ["Maurice Tabard", "наложения и соляризация"],
-  ["Raoul Ubac", "деформированные изображения"],
-  ["Jacques-André Boiffard", "сюрреалистические крупные планы"],
-  ["Philippe Halsman", "летающие кошки и Дали"],
-  ["Weegee", "искажения и ночной город"],
-  ["Ikko Narahara", "замкнутые миры"],
-  ["Trent Parke", "жуткое солнечное свечение"],
-  ["Todd Hido", "дома ночью"],
-  ["Erwin Wurm", "абсурдные скульптуры из людей"],
-  ["Floris Neusüss", "фотограммы-тени"],
-  ["Wolfgang Tillmans", "абстракции и странные натюрморты"],
-  ["Desiree Dolron", "фламандские призрачные портреты"],
-  ["Rinko Kawauchi", "тихие сны"],
-  ["Bernard Plossu", "размытые сны"],
-  ["Christopher Bucklow", "силуэты из точек света"],
-  ["Adam Fuss", "фотограммы, дым и змеи"],
-  ["Aaron Siskind", "абстракции-фактуры"],
-  ["Minor White", "мистическая абстракция"],
-  ["Kenji Ishiguro", "японский сюрреализм"],
-  ["Daisuke Yokota", "распадающиеся образы"],
-  ["Lorenzo Vitturi", "странные скульптуры с рынка"],
-  ["David Lynch", "заброшенные фабрики"],
-  ["Ilona Szwarc", "маски и двойники"],
-  ["Joel-Peter Witkin", "барочные мрачные постановки, смерть и тело"],
-  ["Andres Serrano", "морг, религия, провокация"],
-  ["Jeffrey Silverthorne", "морг и тело"],
-  ["Rosamond Purcell", "анатомические коллекции и диковины"],
-  ["Christian Boltanski", "фотографии мёртвых и забытых"],
-  ["Izima Kaoru", "постановочные «пейзажи со смертью»"],
-  ["Erwin Olaf", "холодные тревожные постановки"],
-  ["Laura Makabresku", "тёмные сказки и ритуалы"],
-  ["Kyle Thompson", "жутковатые автопортреты в лесу"],
-  ["Pierre Molinier", "фетиш, маски, двойники"],
-  ["Nobuyoshi Araki", "эрос и танатос, куклы и цветы"],
-  ["Miroslav Tichý", "самодельные камеры, размытая память"],
-  ["Aneta Grzeszykowska", "куклы-двойники и исчезновение себя"],
-  ["Jan Švankmajer", "куклы, марионетки, сюрреализм"],
-  ["Brothers Quay", "кукольные миры, пыль и механизмы"],
-  ["David Levinthal", "игрушки и куклы как сцены"],
-  ["Kiki Smith", "тело, сказки, жутковатое"],
-  ["Ellen Kooi", "фигуры в странных пейзажах"],
-  ["Natalie Krick", "гротескный гламур"],
-  ["Sarah Sitkin", "тела-слепки"],
-  ["Patricia Piccinini", "странные гибридные существа"],
-  ["Ron Mueck", "гиперреалистичные фигуры"],
-  ["Mark Ryden", "кукольная жуть, живопись"],
-  ["Ray Caesar", "фарфоровые кукольные миры"],
-  ["Eugène Atget mannequins", "манекены в витринах Парижа"],
-  ["Ventriloquist dummy photography", "куклы чревовещателей"],
-  ["Antique porcelain doll photography", "старые фарфоровые куклы"],
-  ["Victorian post-mortem photography", "викторианские посмертные снимки"],
-  ["William Mumler spirit photography", "«фотографии духов» XIX века"],
-  ["Lee Godie", "уличная художница, автопортреты из фотобудок"],
-  ["Tomasz Machciński", "сотни автопортретов в чужих образах"],
-  ["Steven Edson", "манекены в витринах по всему миру"],
-  ["Rebecca Martinez", "манекены и куклы «реборн»"],
-  ["Suzette Dushi", "сломанные, разрушающиеся манекены"],
-  ["Jamie Diamond", "женщины и их куклы-младенцы"],
-  ["Elena Dorfman", "люди и их силиконовые куклы"],
-  ["Louisa Clement", "куклы-двойники"],
-  ["Ian White", "люди, похожие на манекены"],
-  ["Umbo", "тайны улицы, Веймар"],
-  ["Roger Parry", "сюрреализм 1930-х"],
-  ["Eli Lotar", "бойни и сюрреализм"],
-  ["Georges Hugnet", "сюрреалистичные коллажи"],
-  ["Val Telberg", "многослойные фотомонтажи-сны"],
-  ["Miloš Koreček", "чешские фото-абстракции"],
-  ["Angus McBean", "сюрреалистичные портреты-постановки"],
-  ["Joan Fontcuberta", "выдуманные науки и существа"],
-  ["Cig Harvey", "домашняя магия"],
-  ["Marjorie Salvaterra", "тревожные «обычные женщины»"],
-  ["Edmund Teske", "сны-наложения"],
-  ["Bruce Charlesworth", "нуарные постановки"],
-  ["Holly Roberts", "раскрашенные фото-видения"],
-  ["Keith Carter", "мистический американский Юг"],
-  ["Michael Ackerman", "ночные размытые видения"],
-  ["Bea Nettles", "альтернативные процессы, сны"],
-  ["Jo Ann Callis", "тревожные постановки 70-х"],
-  ["Eileen Cowin", "семейные драмы-постановки"],
-  ["Ruth Thorne-Thomsen", "миниатюрные пинхол-миры"],
-  ["Patrick Nagatani", "постановочный ядерный абсурд"],
-  ["Andrea Modica", "тёмные странные портреты"],
-  ["Christian Patterson", "вымышленное криминальное досье"],
-  ["Shelby Lee Adams", "аппалачские странности"],
-  ["Teun Hocks", "абсурд и одиночество"],
-  ["Ivan Pinkava", "чешские мрачные постановки"],
-  ["Rimaldas Vikšraitis", "гротеск литовской деревни"],
-  ["Vitas Luckus", "тёмный литовский модернизм"],
-  ["Andrey Chezhin", "экспериментальный Петербург"],
-  ["Michiko Kon", "натюрморты из рыбы и овощей"],
-  ["Seiji Kurata", "ночной токийский андеграунд"],
-  ["Nakaji Yasui", "японский сюрреализм 30-х"],
-  ["Ei-Q", "фотограммы-сны"],
-  ["Ryuji Miyamoto", "руины"],
-  ["Melvin Sokolsky", "модели в пузырях над городом"]
+  ["Ralph Eugene Meatyard", "masks, abandoned houses, blurred figures"],
+  ["Francesca Woodman", "vanishing figures in empty rooms"],
+  ["Duane Michals", "photo-stories about dreams and ghosts"],
+  ["Arthur Tress", "staged dreams and nightmares"],
+  ["Gregory Crewdson", "cinematic, unsettling America"],
+  ["Diane Arbus", "the strange in ordinary people"],
+  ["Roger Ballen", "a dark theatre of the absurd"],
+  ["Claude Cahun", "masks and doubles"],
+  ["Man Ray", "surrealism, solarization"],
+  ["Dora Maar", "surrealist photomontage"],
+  ["Kati Horna", "masks and dolls, surrealism"],
+  ["Grete Stern", "the “Dreams” photomontages"],
+  ["Florence Henri", "mirrors and reflections"],
+  ["Jerry Uelsmann", "layered surreal prints"],
+  ["Clarence John Laughlin", "the ghostly American South"],
+  ["Frederick Sommer", "surrealism and strange objects"],
+  ["Wynn Bullock", "mystical landscapes"],
+  ["Laurie Simmons", "dolls and dollhouse interiors"],
+  ["Cindy Sherman", "staged characters"],
+  ["Tim Walker", "fairy-tale grotesque fashion"],
+  ["Erwin Blumenfeld", "distortions and experiments"],
+  ["Masahisa Fukase", "ravens and solitude"],
+  ["Eikoh Hosoe", "Japanese surrealism, butoh"],
+  ["Daido Moriyama", "harsh, grainy, nocturnal"],
+  ["Lieko Shiga", "myths and night staging"],
+  ["Shoji Ueda", "surrealism on sand dunes"],
+  ["Kansuke Yamamoto", "Japanese surrealism"],
+  ["Toshiko Okanoue", "dream collages"],
+  ["Hiroshi Sugimoto", "dioramas and wax figures"],
+  ["Viviane Sassen", "shadows and sculptural bodies"],
+  ["Asger Carlsen", "distorted body sculptures"],
+  ["Erik Johansson", "impossible landscapes"],
+  ["Thomas Demand", "paper copies of reality"],
+  ["Loretta Lux", "doll-like, unreal portraits"],
+  ["Julie Blackmon", "domestic chaos as painting"],
+  ["Anna Gaskell", "unsettling fairy tales"],
+  ["Charles Fréger", "ritual costumes, wild men"],
+  ["Gilbert Garcin", "absurd scenes starring himself"],
+  ["Chema Madoz", "poetic puzzle objects"],
+  ["Kensuke Koike", "cut-up vintage photographs"],
+  ["Pieter Hugo", "hyena men, strange portraits"],
+  ["Sandy Skoglund", "rooms overrun by animals"],
+  ["Paolo Ventura", "miniature staged worlds"],
+  ["Juno Calypso", "pink, eerie glamour"],
+  ["Wanda Wulz", "the cat-woman"],
+  ["Yasumasa Morimura", "becoming other people"],
+  ["Lucas Samaras", "distorted self-portraits"],
+  ["Mario Giacomelli", "dancing priests"],
+  ["Graciela Iturbide", "rituals and birds of Mexico"],
+  ["Manuel Álvarez Bravo", "Mexican surrealism"],
+  ["Pentti Sammallahti", "dogs in empty landscapes"],
+  ["Zdzisław Beksiński", "early dark photographs"],
+  ["Robert and Shana ParkeHarrison", "strange machines, man and nature"],
+  ["Alex Prager", "uneasy cinematic scenes"],
+  ["Cristina de Middel", "invented documentary"],
+  ["Petrina Hicks", "smooth, unreal portraits"],
+  ["Ruud van Empel", "digital gardens of Eden"],
+  ["Sarah Moon", "blurred fairy tales"],
+  ["Deborah Turbeville", "ghostly fashion"],
+  ["Jindřich Štyrský", "Czech surrealism"],
+  ["Emila Medková", "Czech surrealism"],
+  ["Hannah Höch", "photomontage"],
+  ["Herbert Bayer", "surreal photomontage"],
+  ["Maurice Tabard", "double exposures and solarization"],
+  ["Raoul Ubac", "melted, deformed images"],
+  ["Jacques-André Boiffard", "surrealist close-ups"],
+  ["Philippe Halsman", "flying cats and Dalí"],
+  ["Weegee", "distortions and the night city"],
+  ["Ikko Narahara", "closed worlds"],
+  ["Trent Parke", "eerie sunlight"],
+  ["Todd Hido", "houses at night"],
+  ["Erwin Wurm", "absurd human sculptures"],
+  ["Floris Neusüss", "photogram shadows"],
+  ["Wolfgang Tillmans", "abstractions and odd still lifes"],
+  ["Desiree Dolron", "ghostly Flemish portraits"],
+  ["Rinko Kawauchi", "quiet dreams"],
+  ["Bernard Plossu", "blurred dreams"],
+  ["Christopher Bucklow", "silhouettes made of light"],
+  ["Adam Fuss", "photograms, smoke and snakes"],
+  ["Aaron Siskind", "textural abstraction"],
+  ["Minor White", "mystical abstraction"],
+  ["Kenji Ishiguro", "Japanese surrealism"],
+  ["Daisuke Yokota", "dissolving images"],
+  ["Lorenzo Vitturi", "strange market sculptures"],
+  ["David Lynch", "abandoned factories"],
+  ["Ilona Szwarc", "masks and doubles"],
+  ["Joel-Peter Witkin", "baroque dark tableaux, death and the body"],
+  ["Andres Serrano", "morgue, religion, provocation"],
+  ["Jeffrey Silverthorne", "the morgue and the body"],
+  ["Rosamond Purcell", "anatomical collections and curiosities"],
+  ["Christian Boltanski", "photographs of the dead and forgotten"],
+  ["Izima Kaoru", "staged “landscapes with a corpse”"],
+  ["Erwin Olaf", "cold, unsettling staging"],
+  ["Laura Makabresku", "dark fairy tales and rituals"],
+  ["Kyle Thompson", "eerie self-portraits in the woods"],
+  ["Pierre Molinier", "fetish, masks, doubles"],
+  ["Nobuyoshi Araki", "eros and thanatos, dolls and flowers"],
+  ["Miroslav Tichý", "homemade cameras, blurred memory"],
+  ["Aneta Grzeszykowska", "doll doubles and vanishing selves"],
+  ["Jan Švankmajer", "dolls, puppets, surrealism"],
+  ["Brothers Quay", "puppet worlds, dust and mechanisms"],
+  ["David Levinthal", "toys and dolls as scenes"],
+  ["Kiki Smith", "the body, fairy tales, the eerie"],
+  ["Ellen Kooi", "figures in strange landscapes"],
+  ["Natalie Krick", "grotesque glamour"],
+  ["Sarah Sitkin", "body casts"],
+  ["Patricia Piccinini", "strange hybrid creatures"],
+  ["Ron Mueck", "hyperreal figures"],
+  ["Mark Ryden", "doll-like creepiness, painting"],
+  ["Ray Caesar", "porcelain doll worlds"],
+  ["Eugène Atget mannequins", "mannequins in Paris shop windows"],
+  ["Ventriloquist dummy photography", "ventriloquist dummies"],
+  ["Antique porcelain doll photography", "old porcelain dolls"],
+  ["Victorian post-mortem photography", "Victorian post-mortem portraits"],
+  ["William Mumler spirit photography", "19th-century “spirit photographs”"],
+  ["Lee Godie", "street artist, photobooth self-portraits"],
+  ["Tomasz Machciński", "hundreds of self-portraits as other people"],
+  ["Steven Edson", "mannequins in shop windows worldwide"],
+  ["Rebecca Martinez", "mannequins and reborn dolls"],
+  ["Suzette Dushi", "broken, decaying mannequins"],
+  ["Jamie Diamond", "women and their baby dolls"],
+  ["Elena Dorfman", "people and their silicone dolls"],
+  ["Louisa Clement", "doll doubles"],
+  ["Ian White", "people who look like mannequins"],
+  ["Umbo", "mysteries of the street, Weimar"],
+  ["Roger Parry", "surrealism of the 1930s"],
+  ["Eli Lotar", "slaughterhouses and surrealism"],
+  ["Georges Hugnet", "surrealist collages"],
+  ["Val Telberg", "layered dream photomontages"],
+  ["Miloš Koreček", "Czech photo abstractions"],
+  ["Angus McBean", "surreal staged portraits"],
+  ["Joan Fontcuberta", "invented sciences and creatures"],
+  ["Cig Harvey", "domestic magic"],
+  ["Marjorie Salvaterra", "uneasy “ordinary women”"],
+  ["Edmund Teske", "dreamlike double exposures"],
+  ["Bruce Charlesworth", "noir staging"],
+  ["Holly Roberts", "painted photo-visions"],
+  ["Keith Carter", "the mystical American South"],
+  ["Michael Ackerman", "blurred night visions"],
+  ["Bea Nettles", "alternative processes, dreams"],
+  ["Jo Ann Callis", "uneasy 1970s staging"],
+  ["Eileen Cowin", "staged family dramas"],
+  ["Ruth Thorne-Thomsen", "miniature pinhole worlds"],
+  ["Patrick Nagatani", "staged nuclear absurdity"],
+  ["Andrea Modica", "dark, strange portraits"],
+  ["Christian Patterson", "a fictional crime file"],
+  ["Shelby Lee Adams", "Appalachian strangeness"],
+  ["Teun Hocks", "absurdity and loneliness"],
+  ["Ivan Pinkava", "dark Czech staging"],
+  ["Rimaldas Vikšraitis", "grotesque Lithuanian village life"],
+  ["Vitas Luckus", "dark Lithuanian modernism"],
+  ["Andrey Chezhin", "experimental St. Petersburg"],
+  ["Michiko Kon", "still lifes of fish and vegetables"],
+  ["Seiji Kurata", "Tokyo's night underground"],
+  ["Nakaji Yasui", "Japanese surrealism of the 1930s"],
+  ["Ei-Q", "dream photograms"],
+  ["Ryuji Miyamoto", "ruins"],
+  ["Melvin Sokolsky", "models in bubbles above the city"]
 ];
 const KNOWN = new Set(["Ralph Eugene Meatyard", "Francesca Woodman", "Duane Michals", "Arthur Tress", "Gregory Crewdson", "Diane Arbus", "Roger Ballen", "Claude Cahun", "Man Ray", "Dora Maar", "Jerry Uelsmann", "Laurie Simmons", "Cindy Sherman", "Tim Walker", "Erwin Blumenfeld", "Masahisa Fukase", "Eikoh Hosoe", "Daido Moriyama", "Shoji Ueda", "Hiroshi Sugimoto", "Viviane Sassen", "Erik Johansson", "Thomas Demand", "Loretta Lux", "Julie Blackmon", "Charles Fréger", "Chema Madoz", "Pieter Hugo", "Sandy Skoglund", "Paolo Ventura", "Yasumasa Morimura", "Lucas Samaras", "Mario Giacomelli", "Graciela Iturbide", "Manuel Álvarez Bravo", "Pentti Sammallahti", "Robert and Shana ParkeHarrison", "Alex Prager", "Cristina de Middel", "Sarah Moon", "Deborah Turbeville", "Hannah Höch", "Herbert Bayer", "Maurice Tabard", "Philippe Halsman", "Weegee", "Ikko Narahara", "Trent Parke", "Todd Hido", "Erwin Wurm", "Wolfgang Tillmans", "Rinko Kawauchi", "Bernard Plossu", "Adam Fuss", "Aaron Siskind", "Minor White", "David Lynch", "Joel-Peter Witkin", "Andres Serrano", "Christian Boltanski", "Erwin Olaf", "Nobuyoshi Araki", "Miroslav Tichý", "Jan Švankmajer", "Brothers Quay", "David Levinthal", "Kiki Smith", "Patricia Piccinini", "Ron Mueck", "Mark Ryden", "Ray Caesar", "Floris Neusüss", "Eugène Atget mannequins", "Kati Horna", "Grete Stern", "Lieko Shiga", "Anna Gaskell", "Wynn Bullock", "Asger Carlsen"]);
 UNCANNY.forEach(([n, d]) => { DESC[n] = d; });
 /* topics of each author, read from the short description */
 const TOPICS = [
-  ['куклы', /кукл|манекен|марионет|игрушк|реборн/i], ['сюрреализм 20–40-х', /сюрреал|фотомонтаж|соляриз|коллаж|30-х|наложени|Веймар/i],
-  ['мрачное и тело', /морг|смерт|мёртв|тело|тела|фетиш|эрос|провока|бойни|анатом|гротеск/i], ['постановка', /постанов|сцен|театр|двойник|маск|образ/i],
-  ['сны и сказки', /сны|сон|сказк|маги|мистич|видени|призрач|дух/i], ['Япония', /японск|токий/i], ['абстракция', /абстрак|фотограм|форм|тени/i],
-  ['аутсайдеры', /уличн|самодел|фотобуд|автопортрет/i], ['места и руины', /руин|дома|пейзаж|деревн|Юг|улиц|город|фабрик/i]
+  ['dolls', /doll|mannequin|puppet|toy|dumm|reborn/i], ['early surrealism', /surreal|photomontage|solariz|collage|1930s|double exposure|Weimar|Czech/i],
+  ['dark & the body', /morgue|death|dead|corpse|body|bodies|fetish|eros|provocation|slaughter|anatom|grotesque/i], ['staged', /stag|scene|theatre|tableau|double|mask|becoming/i],
+  ['dreams & fairy tales', /dream|fairy|magic|mystic|vision|ghost|spirit/i], ['Japan', /Japan|Tokyo/i], ['abstraction', /abstract|photogram|shadow|texture/i],
+  ['outsiders', /street artist|homemade|photobooth|self-portrait/i], ['places & ruins', /ruin|house|landscape|village|South|street|city|factor/i]
 ];
-const topicsOf = n => { const d = DESC[n] || ''; const t = TOPICS.filter(([, re]) => re.test(d)).map(([k]) => k); return t.length ? t : ['другое']; };
+const topicsOf = n => { const d = DESC[n] || ''; const t = TOPICS.filter(([, re]) => re.test(d)).map(([k]) => k); return t.length ? t : ['other']; };
 const hiddenAuthors = () => LS.get('hiddenAuthors', []);
 async function discPool(){ const hid = new Set(hiddenAuthors()); return UNCANNY.filter(([n]) => !hid.has(n)).map(([n]) => ({ n, known: KNOWN.has(n) })); }
 /* learning: favorites, pins and lingering on a photo raise that author's topics */
 function likes(){
   const score = {};
-  const add = (n, w) => topicsOf(n).forEach(t => { if (t !== 'другое') score[t] = (score[t] || 0) + w; });
+  const add = (n, w) => topicsOf(n).forEach(t => { if (t !== 'other') score[t] = (score[t] || 0) + w; });
   favs.forEach(f => add(f.name, 1));
   pins.forEach(p => add(p.owner, 0.5));
   const dw = LS.get('dwell', {}); Object.entries(dw).forEach(([n, c]) => add(n, Math.min(c, 10) * 0.1));
@@ -699,8 +699,8 @@ function hideAuthor(name){
   const hid = hiddenAuthors(); if (!hid.includes(name)) hid.push(name); LS.set('hiddenAuthors', hid);
   LS.set('discItems2', LS.get('discItems2', []).filter(x => x.owner !== name));
   if (view) [...view.items].filter(x => x.owner === name).forEach(x => drop(view, x.id));
-  toast('Скрыт: ' + name);
-  const s = $('#hidCount'); if (s) { s.hidden = false; s.textContent = 'Скрытые: ' + hid.length + ' · вернуть'; }
+  toast('Hidden: ' + name);
+  const s = $('#hidCount'); if (s) { s.hidden = false; s.textContent = 'Hidden: ' + hid.length + ' · restore'; }
 }
 async function discMore(){
   if (!key()) return null;
@@ -719,18 +719,18 @@ async function discMore(){
   return null;
 }
 function renderDisc(m){
-  m.innerHTML = `<div class="rhead"><div class="l"><h2>Открытия</h2><span class="sub">${likedSummary().length ? 'сайт заметил, что вам нравятся: ' + esc(likedSummary().join(', ')) : 'странные, жутковатые, сюрреалистичные — ☆ и 📌 учат сайт вашему вкусу'}</span></div><span class="l"><button class="btn ghost" id="hidCount" ${hiddenAuthors().length ? '' : 'hidden'}>Скрытые: ${hiddenAuthors().length} · вернуть</button><button class="btn ghost" id="discNew">↻ Начать заново</button></span></div><div id="vbox"></div>`;
-  $('#hidCount').onclick = () => { LS.set('hiddenAuthors', []); toast('Все скрытые авторы возвращены'); render(); };
+  m.innerHTML = `<div class="rhead"><div class="l"><h2>Discover</h2><span class="sub">${likedSummary().length ? 'you seem to like: ' + esc(likedSummary().join(', ')) : 'strange, uncanny, surreal — ☆ and 📌 teach the site your taste'}</span></div><span class="l"><button class="btn ghost" id="hidCount" ${hiddenAuthors().length ? '' : 'hidden'}>Hidden: ${hiddenAuthors().length} · restore</button><button class="btn ghost" id="discNew">↻ Start over</button></span></div><div id="vbox"></div>`;
+  $('#hidCount').onclick = () => { LS.set('hiddenAuthors', []); toast('All hidden artists restored'); render(); };
   $('#discNew').onclick = () => { LS.set('discItems2', []); LS.set('view.disc2', null); render(); };
   if (!key()) { $('#vbox').innerHTML = keyPanel(); bindKey(); return; }
-  makeView($('#vbox'), LS.get('discItems2', []), { key: 'disc2', more: discMore, empty: 'Не удалось загрузить — попробуйте «Начать заново».' });
+  makeView($('#vbox'), LS.get('discItems2', []), { key: 'disc2', more: discMore, empty: 'Couldn’t load — try “Start over”.' });
 }
 
 /* ---- 2. pins ---- */
 function renderPins(m){
-  if (!pins.length) { m.innerHTML = `<div class="hero"><h1>Пока без пинов</h1><p>Нажимайте 📌 на снимках во вкладке «Поиск» — они соберутся здесь.</p></div>`; return; }
-  m.innerHTML = `<div class="rhead"><div class="l"><h2>Пины</h2><span class="sub">${pins.length} ${pl(pins.length, 'снимок', 'снимка', 'снимков')}</span></div>${modeSeg()}</div><div id="vbox"></div>`;
-  makeView($('#vbox'), pins.slice(), { key: 'pins', more: null, empty: 'Пинов не осталось.' });
+  if (!pins.length) { m.innerHTML = `<div class="hero"><h1>No pins yet</h1><p>Tap 📌 on any photo — your pins will gather here.</p></div>`; return; }
+  m.innerHTML = `<div class="rhead"><div class="l"><h2>Pins</h2><span class="sub">${pins.length} ${pins.length === 1 ? 'photo' : 'photos'}</span></div>${modeSeg()}</div><div id="vbox"></div>`;
+  makeView($('#vbox'), pins.slice(), { key: 'pins', more: null, empty: 'No pins left.' });
 }
 
 /* ---- mixed feed of several photographers ---- */
@@ -754,17 +754,17 @@ function feedMore(names){
 
 /* ---- 3. favorites ---- */
 function renderFavs(m){
-  if (!favs.length) { m.innerHTML = `<div class="hero"><h1>Избранных пока нет</h1><p>Найдите фотографа во вкладке «Поиск» и нажмите ☆ — его снимки появятся здесь общей лентой.</p></div>`; return; }
-  m.innerHTML = `<div class="rhead"><div class="l"><h2>Избранные</h2></div>${modeSeg()}</div>
-    <div class="chips" style="margin-bottom:16px">${favs.map(f => `<span class="chip"><span data-q="${esc(f.name)}">${esc(f.name)}</span><span class="x" data-unfav="${esc(f.name)}" title="Убрать из избранного">✕</span></span>`).join('')}</div>
+  if (!favs.length) { m.innerHTML = `<div class="hero"><h1>No favorites yet</h1><p>Find a photographer in Search and tap ☆ — their photos will show up here as one feed.</p></div>`; return; }
+  m.innerHTML = `<div class="rhead"><div class="l"><h2>Favorites</h2></div>${modeSeg()}</div>
+    <div class="chips" style="margin-bottom:16px">${favs.map(f => `<span class="chip"><span data-q="${esc(f.name)}">${esc(f.name)}</span><span class="x" data-unfav="${esc(f.name)}" title="Remove from favorites">✕</span></span>`).join('')}</div>
     <div id="vbox"></div>`;
   if (!key()) { $('#vbox').innerHTML = keyPanel(); bindKey(); return; }
   const names = favs.map(f => f.name);
-  makeView($('#vbox'), mixed(names), { key: 'favs', more: feedMore(names), empty: 'Снимков пока нет.' });
+  makeView($('#vbox'), mixed(names), { key: 'favs', more: feedMore(names), empty: 'No photos yet.' });
 }
 function toggleFav(name){
-  if (isFav(name)) { favs = favs.filter(f => slug(f.name) !== slug(name)); toast('Убрано из избранного'); }
-  else { favs.unshift({ name, added: Date.now() }); toast('★ ' + name + ' в избранном'); }
+  if (isFav(name)) { favs = favs.filter(f => slug(f.name) !== slug(name)); toast('Removed from favorites'); }
+  else { favs.unshift({ name, added: Date.now() }); toast('★ ' + name + ' added to favorites'); }
   LS.set('favs', favs); counts();
 }
 
