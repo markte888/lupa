@@ -716,8 +716,10 @@ async function discMore(){
   for (let tries = 0; tries < 4; tries++) {
     const fresh = pool.filter(p => !seen[p.n]);
     const again = pool.filter(p => seen[p.n] && !recent.includes(p.n));
-    // mostly new artists; now and then bring back someone you passed by
-    const revisit = again.length && (!fresh.length || Math.random() < 0.25);
+    // new artists first; one returning artist after every 20 new ones
+    const count = LS.get('discCount', 0);
+    const revisit = again.length && (!fresh.length || count >= 20);
+    LS.set('discCount', revisit ? 0 : count + 1);
     const name = pickName(revisit ? again : fresh, recent); if (!name) return null;
     recent.push(name); LS.set('discRecent2', recent.slice(-40));
     const want = revisit ? 2 : 5;
